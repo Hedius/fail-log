@@ -1,6 +1,6 @@
 ﻿/* FailLog.cs
 
-by PapaCharlie9, MorpheusX(AUT)
+by PapaCharlie9, MorpheusX(AUT), Hedius
 
 Permission is hereby granted, free of charge, to any person or organization
 obtaining a copy of the software and accompanying documentation covered by
@@ -124,10 +124,12 @@ namespace PRoConEvents
         public bool EnableRestartOnBlaze;
         public int RestartOnBlazeDelay;
         public bool EnableEmailOnBlaze;
+        public bool EnableDiscordWebhookOnBlaze;
 
         /* ===== SECTION 2 - Server Description ===== */
 
         public String GameServerType;
+        public int InternalServerID;
         public String RankedServerProvider;
         public String ServerOwnerOrCommunity;
         public String ContactInfo;
@@ -146,6 +148,15 @@ namespace PRoConEvents
         public bool SMTPUseSSL;
         public String SMTPUsername;
         public String SMTPPassword;
+
+        /* ===== SECTION 4 - Discord Settings ===== */
+        public String WebhookAuthor;
+        public bool UseCustomWebhookAvatar;
+        public String WebhookAvatarURL;
+        public String WebhookSubject;
+        public int WebhookColourCode;
+        public List<String> WebhookMessage;
+        public String WebhookURL;
 
         /* Constructor */
 
@@ -204,10 +215,12 @@ namespace PRoConEvents
             EnableRestartOnBlaze = false;
             RestartOnBlazeDelay = 0;
             EnableEmailOnBlaze = false;
+            EnableDiscordWebhookOnBlaze = false;
 
             /* ===== SECTION 2 - Server Description ===== */
 
             GameServerType = "BF3";
+            InternalServerID = 1;
             RankedServerProvider = String.Empty;
             ServerOwnerOrCommunity = String.Empty;
             ContactInfo = String.Empty;
@@ -241,6 +254,28 @@ namespace PRoConEvents
             SMTPUseSSL = false;
             SMTPUsername = String.Empty;
             SMTPPassword = String.Empty;
+
+            /* ===== SECTION 4 - Discord Settings ===== */
+
+            WebhookAuthor = "FailLog";
+            UseCustomWebhookAvatar = false;
+            WebhookAvatarURL = String.Empty;
+            WebhookSubject = "Server %servername% blazed/crashed!";
+            WebhookColourCode = 0xff0000;
+
+            WebhookMessage = new List<String>();
+            WebhookMessage.Add("FailLog - BlazeReport");
+            WebhookMessage.Add("Server %id% '%servername%' just blazed!");
+            WebhookMessage.Add("Here's some information about the Blaze:");
+            WebhookMessage.Add("UTC: %time%");
+            WebhookMessage.Add("Server: %servername%");
+            WebhookMessage.Add("Players: %playercount%");
+            WebhookMessage.Add("Map: %map%");
+            WebhookMessage.Add("Gamemode: %gamemode%");
+            WebhookMessage.Add("Round: %round%");
+            WebhookMessage.Add("Uptime: %uptime%");
+
+            WebhookURL = String.Empty;
         }
 
         // Properties
@@ -271,17 +306,17 @@ namespace PRoConEvents
 
         public String GetPluginVersion()
         {
-            return "1.1.0.0";
+            return "2.0.0.0";
         }
 
         public String GetPluginAuthor()
         {
-            return "PapaCharlie9, MorpheusX(AUT)";
+            return "PapaCharlie9, MorpheusX(AUT), Hedius";
         }
 
         public String GetPluginWebsite()
         {
-            return "https://github.com/PapaCharlie9/fail-log";
+            return "https://gitlab.com/E4GL/fail-log";
         }
 
         public String GetPluginDescription()
@@ -324,9 +359,13 @@ namespace PRoConEvents
 
                 lstReturn.Add(new CPluginVariable("1 - Settings|Enable Email On Blaze", EnableEmailOnBlaze.GetType(), EnableEmailOnBlaze));
 
+                lstReturn.Add(new CPluginVariable("1 - Settings|Enable Discord Webhook On Blaze", EnableDiscordWebhookOnBlaze.GetType(), EnableDiscordWebhookOnBlaze));
+
                 /* ===== SECTION 2 - Server Description ===== */
 
                 lstReturn.Add(new CPluginVariable("2 - Server Description|Game Server Type", GameServerType.GetType(), GameServerType));
+
+                lstReturn.Add(new CPluginVariable("2 - Server Description|Internal Server ID", InternalServerID.GetType(), InternalServerID));
 
                 lstReturn.Add(new CPluginVariable("2 - Server Description|Ranked Server Provider", RankedServerProvider.GetType(), RankedServerProvider));
 
@@ -361,6 +400,23 @@ namespace PRoConEvents
                     lstReturn.Add(new CPluginVariable("3 - Email Settings|SMTP Username", SMTPUsername.GetType(), SMTPUsername));
 
                     lstReturn.Add(new CPluginVariable("3 - Email Settings|SMTP Password", SMTPPassword.GetType(), SMTPPassword));
+                }
+
+                /* ===== SECTION 4 - Discord Settings ===== */
+                if (EnableDiscordWebhookOnBlaze)
+                {
+                    lstReturn.Add(new CPluginVariable("4 - Discord Settings|Webhook Author", WebhookAuthor.GetType(), WebhookAuthor));
+                    lstReturn.Add(new CPluginVariable("4 - Discord Settings|Use Custom Webhook Avatar", UseCustomWebhookAvatar.GetType(),
+                                                      UseCustomWebhookAvatar));
+                    if(UseCustomWebhookAvatar)
+                    {
+                        lstReturn.Add(new CPluginVariable("4 - Discord Settings|Webhook Avatar URL", WebhookAvatarURL.GetType(), WebhookAvatarURL));
+                    }
+
+                    lstReturn.Add(new CPluginVariable("4 - Discord Settings|Webhook Subject", WebhookSubject.GetType(), WebhookSubject));
+                    lstReturn.Add(new CPluginVariable("4 - Discord Settings|Webhook Colour Code", WebhookColourCode.GetType(), WebhookColourCode));
+                    lstReturn.Add(new CPluginVariable("4 - Discord Settings|Webhook Message", typeof(String[]), WebhookMessage.ToArray()));
+                    lstReturn.Add(new CPluginVariable("4 - Discord Settings|Webhook URL", WebhookURL.GetType(), WebhookURL));
                 }
             }
             catch (Exception e)
@@ -459,6 +515,9 @@ namespace PRoConEvents
                 {
                     ValidateIntRange(ref DebugLevel, "Debug Level", 0, 9, 2, false);
                 }
+                else if(strVariable.Contains("Internal Server ID")){
+                    ValidateIntRange(ref InternalServerID, "Internal Server ID", 0, 20, 1, false);
+                }
                 else if (strVariable.Contains("Blaze Disconnect Heuristic Percent"))
                 {
                     ValidateDoubleRange(ref BlazeDisconnectHeuristicPercent, "Blaze Disconnect Heuristic Percent", 33, 100, 75, false);
@@ -475,6 +534,11 @@ namespace PRoConEvents
                 {
                     ValidateBattlelogServerLink(ref BattlelogLink, "Battlelog Link", String.Empty);
                 }
+                else if (strVariable.Contains("Webhook URL"))
+                {
+                    ValidateDiscordWebhookLink(ref WebhookURL, "Webhook URL", String.Empty);
+                }
+
             }
             catch (Exception e)
             {
@@ -547,7 +611,7 @@ namespace PRoConEvents
             ConsoleWrite("^bEnabled!^n Version = " + GetPluginVersion());
 
             Thread pluginStartup = new Thread(
-                delegate()
+                delegate ()
                 {
                     GatherProconGoodies();
 
@@ -604,6 +668,7 @@ namespace PRoConEvents
             if (!fIsEnabled) return;
 
             DebugWrite("^9^bGot OnListPlayers^n, " + players.Count, 8);
+            Failure("TEST", 40);
 
             try
             {
@@ -697,7 +762,7 @@ namespace PRoConEvents
                         ConsoleWarn(" ");
 
                         Thread restartThread = new Thread(
-                            delegate()
+                            delegate ()
                             {
                                 fRestartInitiated = true;
 
@@ -949,7 +1014,7 @@ namespace PRoConEvents
             if (EnableWebLog && type.CompareTo("BLAZE_DISCONNECT") == 0)
             {
                 Thread webLogThread = new Thread(
-                    delegate()
+                    delegate ()
                     {
                         NameValueCollection postData = new NameValueCollection();
 
@@ -993,7 +1058,7 @@ namespace PRoConEvents
             if (EnableEmailOnBlaze && type.CompareTo("BLAZE_DISCONNECT") == 0)
             {
                 Thread mailSendThread = new Thread(
-                    delegate()
+                    delegate ()
                     {
                         try
                         {
@@ -1012,12 +1077,30 @@ namespace PRoConEvents
                             {
                                 mailMessage.To.Add(new MailAddress(address, address));
                             }
-                            mailMessage.Subject = EmailSubject.Replace("%servername%", fServerInfo.ServerName).Replace("%serverip%", fHost).Replace("%serverport%", fPort).Replace("%time%", utcTime).Replace("%playercount%", players).Replace("%map%", this.FriendlyMap).Replace("%gamemode%", this.FriendlyMode).Replace("%round%", round).Replace("%uptime%", upTime);
+                            mailMessage.Subject = EmailSubject.Replace("%id%", InternalServerID.ToString())
+                                                              .Replace("%servername%", fServerInfo.ServerName)
+                                                              .Replace("%serverip%", fHost)
+                                                              .Replace("%serverport%", fPort)
+                                                              .Replace("%time%", utcTime)
+                                                              .Replace("%playercount%", players)
+                                                              .Replace("%map%", this.FriendlyMap)
+                                                              .Replace("%gamemode%", this.FriendlyMode)
+                                                              .Replace("%round%", round)
+                                                              .Replace("%uptime%", upTime);
                             mailMessage.SubjectEncoding = System.Text.Encoding.UTF8;
                             mailMessage.Body = String.Empty;
                             foreach (String bodyLine in EmailMessage)
                             {
-                                mailMessage.Body += bodyLine.Replace("%servername%", fServerInfo.ServerName).Replace("%serverip%", fHost).Replace("%serverport%", fPort).Replace("%time%", utcTime).Replace("%playercount%", players).Replace("%map%", this.FriendlyMap).Replace("%gamemode%", this.FriendlyMode).Replace("%round%", round).Replace("%uptime%", upTime);
+                                mailMessage.Body += bodyLine.Replace("%id%", InternalServerID.ToString())
+                                                            .Replace("%servername%", fServerInfo.ServerName)
+                                                            .Replace("%serverip%", fHost)
+                                                            .Replace("%serverport%", fPort)
+                                                            .Replace("%time%", utcTime)
+                                                            .Replace("%playercount%", players)
+                                                            .Replace("%map%", this.FriendlyMap)
+                                                            .Replace("%gamemode%", this.FriendlyMode)
+                                                            .Replace("%round%", round)
+                                                            .Replace("%uptime%", upTime);
                             }
                             mailMessage.BodyEncoding = System.Text.Encoding.UTF8;
                             mailMessage.IsBodyHtml = true;
@@ -1044,6 +1127,142 @@ namespace PRoConEvents
                 mailSendThread.IsBackground = true;
                 mailSendThread.Name = "MailSendThread";
                 mailSendThread.Start();
+            }
+            //if (EnableDiscordWebhookOnBlaze && type.CompareTo("BLAZE_DISCONNECT") == 0)
+            if(EnableDiscordWebhookOnBlaze)
+            {
+                String title = String.Empty;
+                String message = String.Empty;
+
+                Thread discordWebhookThread = new Thread(
+                    delegate ()
+                    {
+                        if (DebugLevel >= 4)
+                            ConsoleWrite("Preparing BlazeReport Discord notification...");
+
+                        title = WebhookSubject.Replace("%id%", InternalServerID.ToString())
+                                                          .Replace("%servername%", fServerInfo.ServerName)
+                                                          .Replace("%serverip%", fHost)
+                                                          .Replace("%serverport%", fPort)
+                                                          .Replace("%time%", utcTime)
+                                                          .Replace("%playercount%", players)
+                                                          .Replace("%map%", this.FriendlyMap)
+                                                          .Replace("%gamemode%", this.FriendlyMode)
+                                                          .Replace("%round%", round)
+                                                          .Replace("%uptime%", upTime);
+
+
+
+                        foreach (String messageLine in WebhookMessage)
+                        {
+                            message += messageLine.Replace("%id%", InternalServerID.ToString())
+                                                    .Replace("%servername%", fServerInfo.ServerName)
+                                                         .Replace("%serverip%", fHost)
+                                                         .Replace("%serverport%", fPort)
+                                                         .Replace("%time%", utcTime)
+                                                         .Replace("%playercount%", players)
+                                                         .Replace("%map%", this.FriendlyMap)
+                                                         .Replace("%gamemode%", this.FriendlyMode)
+                                                         .Replace("%round%", round)
+                                                         .Replace("%uptime%", upTime);
+                            message += "\n";
+                        }
+
+                        DiscordWebhook notification = new DiscordWebhook(this, WebhookURL, WebhookAuthor, WebhookAvatarURL, WebhookColourCode, UseCustomWebhookAvatar);
+                        notification.sendNotification(title, message);
+                        ConsoleWrite(message);
+
+                        if (DebugLevel >= 3) ConsoleWrite("BlazeReport Discord notification sent successfully!");
+
+                    }
+
+                );
+                discordWebhookThread.IsBackground = true;
+                discordWebhookThread.Name = "DiscordWebhookThread";
+                discordWebhookThread.Start();
+            }
+        }
+
+
+        // Extension: Discord Hook
+        public class DiscordWebhook{
+            private FailLog logger;
+            public String URL;
+            public String author;
+            public String avatar;
+            public String title;
+            public String message;
+            public int colour;
+            
+            public bool useCustomAvatar;
+
+            public DiscordWebhook(FailLog logger, String URL, String author, String avatar, int colour, bool useCustomAvatar){
+                this.logger = logger;
+                this.URL = URL;
+                this.author = author;
+                this.avatar = avatar;
+                this.colour = colour;
+                this.useCustomAvatar = useCustomAvatar;
+            }
+            
+            public void sendNotification(String title, String message){
+                if (title == null || message == null){
+                    logger.ConsoleError("Unable to send FailLog to Discord. Title/Message empty.");
+                    return;
+                }
+                Hashtable embed = new Hashtable{
+                    {"title", title},
+                    {"description", message},
+                    {"color", colour},
+                    {"timestamp", DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")},
+                };
+
+                logger.ConsoleWrite(URL);
+                ArrayList embeds = new ArrayList{embed};
+
+                Hashtable jsonTable = new Hashtable();
+                jsonTable["username"] = author;
+                jsonTable["embeds"] = embeds;
+
+                if(useCustomAvatar)
+                    jsonTable["avatar_url"] = avatar;
+
+                String jsonBody = JSON.JsonEncode(jsonTable);
+
+                post(jsonBody);
+            }
+
+            public void post(String jsonBody){
+                try{
+                    if (String.IsNullOrEmpty(URL)){
+                        logger.ConsoleError("Discord WebHook URL empty! Unable to post report.");
+                        return;
+                    }
+                    if (String.IsNullOrEmpty(jsonBody)){
+                        logger.ConsoleError("Discord note body empty! Unable to post report.");
+                        return;
+                    }
+
+                    WebRequest request = WebRequest.Create(URL);
+                    request.Method = "POST";
+                    request.ContentType = "application/json";
+                    byte[] byteArray = Encoding.UTF8.GetBytes(jsonBody);
+                    request.ContentLength = byteArray.Length;
+                    Stream requestStream = request.GetRequestStream();
+                    requestStream.Write(byteArray, 0, byteArray.Length);
+                    requestStream.Close();
+                    logger.ConsoleWrite("test2");
+                    logger.ConsoleWrite(jsonBody + "hmmm");
+                }
+                catch (WebException e){
+                    WebResponse response = e.Response;
+                    logger.ConsoleError("Discord Webhook failed: " + new StreamReader(response.GetResponseStream()).ReadToEnd());
+                    logger.ConsoleException(e);
+                }
+                catch (Exception e){
+                    logger.ConsoleError("Error posting to Discord WebHook.");
+                    logger.ConsoleException(e);
+                }
             }
         }
 
@@ -1332,6 +1551,17 @@ namespace PRoConEvents
             }
         }
 
+        private void ValidateDiscordWebhookLink(ref String val, String propName, String def)
+        {
+            if (!val.Contains("https://discordapp.com/api/webhooks/") && val.CompareTo(String.Empty) != 0)
+            {
+                ConsoleError("^b" + propName + "^n is not a valid Disocrd webhook, was set to " + val + ", corrected to " + def);
+                val = def;
+                return;
+            }
+        }
+
+
         public void CheckForPluginUpdate()
         {
             try
@@ -1423,7 +1653,7 @@ namespace PRoConEvents
                 List<String> byNumeric = new List<String>();
                 byNumeric.AddRange(versions.Keys);
                 // Sort numerically descending
-                byNumeric.Sort(delegate(String lhs, String rhs)
+                byNumeric.Sort(delegate (String lhs, String rhs)
                 {
                     if (lhs == rhs) return 0;
                     if (String.IsNullOrEmpty(lhs)) return 1;
@@ -1553,10 +1783,10 @@ namespace PRoConEvents
         public const String HTML_DOC = @"
 <h1>Fail Log</h1>
 
-<p>For BF3, this plugin logs game server crashes, layer disconnects and Blaze dumps.</p>
+<p>For BF3, BF4, BFHL, this plugin logs game server crashes, layer disconnects and Blaze dumps.</p>
 
 <h2>Description</h2>
-<p>Each failure event generates a single log line. The log line is written to plugin.log. Optionally, it may also be written to a file in procon/Logs and/or to a web logging database on myrcon.com, controled by plugin settings (see below). Note that this plugin must be run without restrictions (<b>not</b> in sandbox mode) in order to use either the optional separate log file or web log features. The plugin may be run in sandbox mode if both of the optional logging features are disabled.</p>
+<p>Each failure event generates a single log line. The log line is written to plugin.log. Optionally, it may also be written to a file in procon/Logs and/or to a Discord server and/or as an email, controled by plugin settings (see below). Note that this plugin must be run without restrictions (<b>not</b> in sandbox mode) in order to use either the optional separate log file or web log features. The plugin may be run in sandbox mode if both of the optional logging features are disabled.</p>
 
 <p>The contents of a log line are divided into fields. The following table describes each of the fields and shows an example:
 <table>
@@ -1599,6 +1829,9 @@ namespace PRoConEvents
 
 <p><b>Enable Email On Blaze</b>: True or False, default False. If True, the plugin will send a notification-email if you server blazes (see settings below). Make sure to disable the sandbox or allow SMTP-connections and your mailserver + mailserver-port in the trusted hosts.</p>
 
+<p><b>Enable Discord Message On Blaze</b>: True or False, default False. If True, the plugin will send a notification to a Discord webhook if you server blazes (see settings below). Make sure to disable the sandbox.</p>
+
+
 <h3>Section 2</h3>
 <p>These settings fully describe your server for logging purposes. Information important for tracking global outages and that can't be extracted from known data is included. All of this information is optional.</p>
 
@@ -1637,10 +1870,17 @@ namespace PRoConEvents
 
 <p><b>SMTP Password</b>: Password used to identify with your SMTP-server.</p>
 
+<h3>Section 4</h3>
+<p>These settings configure the BlazeReport-Discord Message being sent. The following values can be entered as wildcards at the Message-subject and Message-body and will be replaced: %servername%, %serverip%, %serverport%, %utc%, %players%, %map%, %gamemode%, %round%, %uptime%.</p>
+<p><b>Discord Webhook URL</b>: Full URL of your Discord Webhook.</p>
+
+
+
+
 <h2>Development</h2>
-<p>This plugin is an open source project hosted on GitHub.com. The repo is located at
-<a href='https://github.com/PapaCharlie9/fail-log'>https://github.com/PapaCharlie9/fail-log</a> and
-the master branch is used for public distributions. See the <a href='https://github.com/PapaCharlie9/fail-log/tags'>Tags</a> tab for the latest ZIP distributions. If you would like to offer bug fixes or new features, feel
+<p>This plugin is an open source project hosted on GitLab.com. The repo is located at
+<a href='https://gitlab.com/Hedius/fail-log'>https://gitlab.com/Hedius/fail-log</a> and
+the master branch is used for public distributions. See the <a href='https://gitlab.com/Hedius/fail-log/tags'>Tags</a> tab for the latest ZIP distributions. If you would like to offer bug fixes or new features, feel
 free to fork the repo and submit pull requests.</p>
 ";
 
