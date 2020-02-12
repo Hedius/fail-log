@@ -1513,7 +1513,7 @@ namespace PRoConEvents
 
                 if (json.ContainsKey("version"))
                 {
-                    latestVersion = (String)json["version"];
+                    latestVersion = (String)json["latest_version"];
                 }
             }
             catch (Exception e)
