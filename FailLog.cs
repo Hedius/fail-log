@@ -1,6 +1,9 @@
 ﻿/* FailLog.cs
 
-by PapaCharlie9, MorpheusX(AUT), Hedius
+by PapaCharlie9, MorpheusX(AUT), Hedius(E4GL)
+
+Code Credit:
+ADKGamers (ColColonCleaner), jbrunink for an example how to use Discord webhooks with PRoCon plugins (AdKats)
 
 Permission is hereby granted, free of charge, to any person or organization
 obtaining a copy of the software and accompanying documentation covered by
@@ -117,7 +120,6 @@ namespace PRoConEvents
         public int DebugLevel;
         public bool EnableLogToFile;  // if true, sandbox must not be in sandbox!
         public String LogFile;
-        public bool EnableWebLog;
         public int BlazeDisconnectHeuristic; // deprecated
         public double BlazeDisconnectHeuristicPercent;
         public double BlazeDisconnectWindowSeconds;
@@ -130,12 +132,7 @@ namespace PRoConEvents
 
         public String GameServerType;
         public int InternalServerID;
-        public String RankedServerProvider;
-        public String ServerOwnerOrCommunity;
-        public String ContactInfo;
-        public String ServerRegion; // Should this be an enum?
-        public String BattlelogLink;
-        public String AdditionalInformation;
+        public String ShortServerName;
 
         /* ===== SECTION 3 - Email Settings ===== */
 
@@ -153,9 +150,9 @@ namespace PRoConEvents
         public String WebhookAuthor;
         public bool UseCustomWebhookAvatar;
         public String WebhookAvatarURL;
-        public String WebhookSubject;
+        public String WebhookTitle;
         public int WebhookColourCode;
-        public List<String> WebhookMessage;
+        public List<String> WebhookContent;
         public String WebhookURL;
 
         /* Constructor */
@@ -211,7 +208,6 @@ namespace PRoConEvents
             BlazeDisconnectHeuristic = CRASH_COUNT_HEURISTIC;
             BlazeDisconnectHeuristicPercent = 75.0;
             BlazeDisconnectWindowSeconds = 30;
-            EnableWebLog = true;
             EnableRestartOnBlaze = false;
             RestartOnBlazeDelay = 0;
             EnableEmailOnBlaze = false;
@@ -219,29 +215,26 @@ namespace PRoConEvents
 
             /* ===== SECTION 2 - Server Description ===== */
 
-            GameServerType = "BF3";
+            GameServerType = "BF4";
             InternalServerID = 1;
-            RankedServerProvider = String.Empty;
-            ServerOwnerOrCommunity = String.Empty;
-            ContactInfo = String.Empty;
-            ServerRegion = String.Empty;
-            BattlelogLink = String.Empty;
-            AdditionalInformation = String.Empty;
+            ShortServerName = "CHANGE ME: Short verserion of your server name";
 
             /* ===== SECTION 3 - Email Settings ===== */
 
             EmailRecipients = new List<String>();
             EmailSender = String.Empty;
-            EmailSubject = "FailLog - Server %servername% blazed (%time%)!";
+            EmailSubject = "FailLog - Server %id% - %shortservername% blazed/crashed (%time%)!";
 
             EmailMessage = new List<String>();
             EmailMessage.Add("<h2 align=\"center\">FailLog - BlazeReport</h2>");
-            EmailMessage.Add("<p>Your server '%servername%' (%serverip%:%serverport%) just blazed!<br />");
+            EmailMessage.Add("<p>Your server %id% '%servername%' just blazed/crashed!<br />");
             EmailMessage.Add("Here's some information about the Blaze:</p>");
             EmailMessage.Add("<table border=\"1\">");
             EmailMessage.Add("<tr><th>Field</th><th>Value</th></tr>");
             EmailMessage.Add("<tr><td align=\"center\">UTC</td><td align=\"center\">%time%</td></tr>");
-            EmailMessage.Add("<tr><td align=\"center\">Server</td><td align=\"center\">%servername%</td></tr>");
+            EmailMessage.Add("<tr><td align=\"center\">Server</td><td align=\"center\">%shortservername%</td></tr>");
+            EmailMessage.Add("<tr><td align=\"center\">Server(Long)</td><td align=\"center\">%servername%</td></tr>");
+            EmailMessage.Add("<tr><td align=\"center\">Server Type</td><td align=\"center\">%servertype%</td></tr>");
             EmailMessage.Add("<tr><td align=\"center\">Players</td><td align=\"center\">%playercount%</td></tr>");
             EmailMessage.Add("<tr><td align=\"center\">Map</td><td align=\"center\">%map%</td></tr>");
             EmailMessage.Add("<tr><td align=\"center\">Gamemode</td><td align=\"center\">%gamemode%</td></tr>");
@@ -259,23 +252,24 @@ namespace PRoConEvents
 
             WebhookAuthor = "FailLog";
             UseCustomWebhookAvatar = false;
-            WebhookAvatarURL = String.Empty;
-            WebhookSubject = "Server %servername% blazed/crashed!";
+            WebhookAvatarURL = "https://upload.wikimedia.org/wikipedia/commons/f/fc/Trinity_Detonation_T%26B.jpg";
+            WebhookTitle = "Server %id% - %shortservername% blazed/crashed!";
             WebhookColourCode = 0xff0000;
 
-            WebhookMessage = new List<String>();
-            WebhookMessage.Add("FailLog - BlazeReport");
-            WebhookMessage.Add("Server %id% '%servername%' just blazed!");
-            WebhookMessage.Add("Here's some information about the Blaze:");
-            WebhookMessage.Add("UTC: %time%");
-            WebhookMessage.Add("Server: %servername%");
-            WebhookMessage.Add("Players: %playercount%");
-            WebhookMessage.Add("Map: %map%");
-            WebhookMessage.Add("Gamemode: %gamemode%");
-            WebhookMessage.Add("Round: %round%");
-            WebhookMessage.Add("Uptime: %uptime%");
+            WebhookContent = new List<String>();
+            WebhookContent.Add("**FailLog - BlazeReport**");
+            WebhookContent.Add("Server **%id%: %shortservername%** just blazed/crashed!");
+            WebhookContent.Add(">> **UTC**: %time%");
+            WebhookContent.Add(">> **ID**: %id");
+            WebhookContent.Add(">> **Server**: %shortservername%");
+            WebhookContent.Add(">> **Server(Long)**: %servername%");
+            WebhookContent.Add(">> **Players**: %playercount%");
+            WebhookContent.Add(">> **Map**: %map%");
+            WebhookContent.Add(">> **Gamemode**: %gamemode%");
+            WebhookContent.Add(">> **Round**: %round%");
+            WebhookContent.Add(">> **Uptime**: %uptime%");
 
-            WebhookURL = String.Empty;
+            WebhookURL = "https://discordapp.com/api/webhooks/ID/SECRET";
         }
 
         // Properties
@@ -311,12 +305,12 @@ namespace PRoConEvents
 
         public String GetPluginAuthor()
         {
-            return "PapaCharlie9, MorpheusX(AUT), Hedius";
+            return "PapaCharlie9, MorpheusX(AUT), Hedius(E4GL)";
         }
 
         public String GetPluginWebsite()
         {
-            return "https://gitlab.com/E4GL/fail-log";
+            return "https://gitlab.com/e4gl/fail-log";
         }
 
         public String GetPluginDescription()
@@ -343,8 +337,6 @@ namespace PRoConEvents
                     lstReturn.Add(new CPluginVariable("1 - Settings|Log File", LogFile.GetType(), LogFile));
                 }
 
-                lstReturn.Add(new CPluginVariable("1 - Settings|Enable Web Log", EnableWebLog.GetType(), EnableWebLog));
-
                 // deprecated: lstReturn.Add(new CPluginVariable("1 - Settings|Blaze Disconnect Heuristic", BlazeDisconnectHeuristic.GetType(), BlazeDisconnectHeuristic));
                 lstReturn.Add(new CPluginVariable("1 - Settings|Blaze Disconnect Heuristic Percent", BlazeDisconnectHeuristicPercent.GetType(), BlazeDisconnectHeuristicPercent));
 
@@ -367,17 +359,8 @@ namespace PRoConEvents
 
                 lstReturn.Add(new CPluginVariable("2 - Server Description|Internal Server ID", InternalServerID.GetType(), InternalServerID));
 
-                lstReturn.Add(new CPluginVariable("2 - Server Description|Ranked Server Provider", RankedServerProvider.GetType(), RankedServerProvider));
+                lstReturn.Add(new CPluginVariable("2 - Server Description|Short Server Name", ShortServerName.GetType(), ShortServerName));
 
-                lstReturn.Add(new CPluginVariable("2 - Server Description|Server Owner Or Community", ServerOwnerOrCommunity.GetType(), ServerOwnerOrCommunity));
-
-                lstReturn.Add(new CPluginVariable("2 - Server Description|Contact Info", ContactInfo.GetType(), ContactInfo));
-
-                lstReturn.Add(new CPluginVariable("2 - Server Description|Server Region", ServerRegion.GetType(), ServerRegion));
-
-                lstReturn.Add(new CPluginVariable("2 - Server Description|Battlelog Link", BattlelogLink.GetType(), BattlelogLink));
-
-                lstReturn.Add(new CPluginVariable("2 - Server Description|Additional Information", AdditionalInformation.GetType(), AdditionalInformation));
 
                 /* ===== SECTION 3 - Email Settings ===== */
 
@@ -406,16 +389,20 @@ namespace PRoConEvents
                 if (EnableDiscordWebhookOnBlaze)
                 {
                     lstReturn.Add(new CPluginVariable("4 - Discord Settings|Webhook Author", WebhookAuthor.GetType(), WebhookAuthor));
+
                     lstReturn.Add(new CPluginVariable("4 - Discord Settings|Use Custom Webhook Avatar", UseCustomWebhookAvatar.GetType(),
                                                       UseCustomWebhookAvatar));
-                    if(UseCustomWebhookAvatar)
+                    if (UseCustomWebhookAvatar)
                     {
                         lstReturn.Add(new CPluginVariable("4 - Discord Settings|Webhook Avatar URL", WebhookAvatarURL.GetType(), WebhookAvatarURL));
                     }
 
-                    lstReturn.Add(new CPluginVariable("4 - Discord Settings|Webhook Subject", WebhookSubject.GetType(), WebhookSubject));
+                    lstReturn.Add(new CPluginVariable("4 - Discord Settings|Webhook Title", WebhookTitle.GetType(), WebhookTitle));
+
                     lstReturn.Add(new CPluginVariable("4 - Discord Settings|Webhook Colour Code", WebhookColourCode.GetType(), WebhookColourCode));
-                    lstReturn.Add(new CPluginVariable("4 - Discord Settings|Webhook Message", typeof(String[]), WebhookMessage.ToArray()));
+
+                    lstReturn.Add(new CPluginVariable("4 - Discord Settings|Webhook Content", typeof(String[]), WebhookContent.ToArray()));
+
                     lstReturn.Add(new CPluginVariable("4 - Discord Settings|Webhook URL", WebhookURL.GetType(), WebhookURL));
                 }
             }
@@ -515,7 +502,8 @@ namespace PRoConEvents
                 {
                     ValidateIntRange(ref DebugLevel, "Debug Level", 0, 9, 2, false);
                 }
-                else if(strVariable.Contains("Internal Server ID")){
+                else if (strVariable.Contains("Internal Server ID"))
+                {
                     ValidateIntRange(ref InternalServerID, "Internal Server ID", 0, 20, 1, false);
                 }
                 else if (strVariable.Contains("Blaze Disconnect Heuristic Percent"))
@@ -530,15 +518,24 @@ namespace PRoConEvents
                 {
                     ValidateIntRange(ref SMTPPort, "SMTP Port", 0, 65535, 25, false);
                 }
-                else if (strVariable.Contains("Battlelog Link"))
+                else if (strVariable.Contains("Webhook Author"))
                 {
-                    ValidateBattlelogServerLink(ref BattlelogLink, "Battlelog Link", String.Empty);
+                    ValidateDiscordWebhookAuthor(ref WebhookAuthor, "Webhook Author", "FailLog");
+                }
+                else if (strVariable.Contains("Webhook Avatar URL"))
+                {
+                    ValidateImageURL(ref WebhookAvatarURL, "Webhook Avatar URL",
+                                     "https://upload.wikimedia.org/wikipedia/commons/f/fc/Trinity_Detonation_T%26B.jpg");
+                }
+                else if (strVariable.Contains("Webhook Colour Code"))
+                {
+                    // Default is red
+                    ValidateIntRange(ref WebhookColourCode, "Webhook Colour Code", 0, 0xffffff, 0xff0000, false);
                 }
                 else if (strVariable.Contains("Webhook URL"))
                 {
-                    ValidateDiscordWebhookLink(ref WebhookURL, "Webhook URL", String.Empty);
+                    ValidateDiscordWebhookURL(ref WebhookURL, "Webhook URL", "https://discordapp.com/api/webhooks/ID/SECRET");
                 }
-
             }
             catch (Exception e)
             {
@@ -668,7 +665,6 @@ namespace PRoConEvents
             if (!fIsEnabled) return;
 
             DebugWrite("^9^bGot OnListPlayers^n, " + players.Count, 8);
-            Failure("TEST", 40);
 
             try
             {
@@ -985,15 +981,10 @@ namespace PRoConEvents
             String upTime = TimeSpan.FromSeconds(fLastUptime).ToString();
             String round = String.Format("{0}/{1}", (fServerInfo.CurrentRound + 1), fServerInfo.TotalRounds);
             String players = Math.Max(fMaxPlayers, fLastMaxPlayers).ToString() + "/" + lastPlayerCount + "/" + fAfterPlayers;
-            String details = String.Format("\"{0},{1},{2},{3},{4},{5},{6},{7}\"",
+            String details = String.Format("\"{0},{1},{2}\"",
                 EscapeLogField(GameServerType),
-                EscapeLogField(RankedServerProvider),
-                EscapeLogField(ServerOwnerOrCommunity),
-                EscapeLogField(ContactInfo),
-                EscapeLogField(ServerRegion),
-                EscapeLogField(fServerInfo.ServerRegion + "/" + fServerInfo.ServerCountry),
-                EscapeLogField(BattlelogLink),
-                EscapeLogField(AdditionalInformation));
+                EscapeLogField(InternalServerID.ToString()),
+                EscapeLogField(ShortServerName));
             String line = String.Format("Type:{0}, UTC:{1}, Server:\"{2}\", Map:{3}, Mode:{4}, Round:{5}, Players:{6}, Uptime:{7}, Details:{8}",
                 type,
                 utcTime,
@@ -1009,50 +1000,6 @@ namespace PRoConEvents
             if (EnableLogToFile)
             {
                 ServerLog(LogFile, line);
-            }
-
-            if (EnableWebLog && type.CompareTo("BLAZE_DISCONNECT") == 0)
-            {
-                Thread webLogThread = new Thread(
-                    delegate ()
-                    {
-                        NameValueCollection postData = new NameValueCollection();
-
-                        postData.Add("gsp", RankedServerProvider);
-                        postData.Add("owner", ServerOwnerOrCommunity);
-                        postData.Add("contactinfo", ContactInfo);
-                        postData.Add("region", fServerInfo.ServerRegion + "/" + fServerInfo.ServerCountry + ((!String.IsNullOrEmpty(ServerRegion)) ? "/" + ServerRegion : String.Empty));
-                        postData.Add("game", GameServerType);
-                        postData.Add("servername", fServerInfo.ServerName);
-                        postData.Add("serverhost", fHost);
-                        postData.Add("serverport", fPort);
-                        postData.Add("map", this.FriendlyMap);
-                        postData.Add("gamemode", this.FriendlyMode);
-                        postData.Add("players", players);
-                        postData.Add("uptime", fLastUptime.ToString());
-                        postData.Add("battleloglink", BattlelogLink);
-                        postData.Add("serverconfig", String.Empty); // Include json-base64 serverconfig string
-                        postData.Add("additionalinfo", AdditionalInformation);
-
-                        String jsonConfig = JSON.JsonEncode(fConfigSettings);
-
-                        if (String.IsNullOrEmpty(jsonConfig))
-                        {
-                            if (DebugLevel >= 3) ConsoleWarn("Failed to encode config-hashtable to json!");
-                        }
-                        else
-                        {
-                            String base64JsonConfig = EncodeBase64(jsonConfig);
-                            DebugWrite("Base64JsonConfig: " + base64JsonConfig, 8);
-
-                            postData.Add("serverconfig", base64JsonConfig);
-                        }
-
-                        SendBlazeReport(postData);
-                    });
-                webLogThread.IsBackground = true;
-                webLogThread.Name = "WebLogThread";
-                webLogThread.Start();
             }
 
             if (EnableEmailOnBlaze && type.CompareTo("BLAZE_DISCONNECT") == 0)
@@ -1078,6 +1025,8 @@ namespace PRoConEvents
                                 mailMessage.To.Add(new MailAddress(address, address));
                             }
                             mailMessage.Subject = EmailSubject.Replace("%id%", InternalServerID.ToString())
+                                                              .Replace("%gametype%", GameServerType)
+                                                              .Replace("%shortservername%", ShortServerName)
                                                               .Replace("%servername%", fServerInfo.ServerName)
                                                               .Replace("%serverip%", fHost)
                                                               .Replace("%serverport%", fPort)
@@ -1092,6 +1041,8 @@ namespace PRoConEvents
                             foreach (String bodyLine in EmailMessage)
                             {
                                 mailMessage.Body += bodyLine.Replace("%id%", InternalServerID.ToString())
+                                                            .Replace("%gametype%", GameServerType)
+                                                            .Replace("%shortservername%", ShortServerName)
                                                             .Replace("%servername%", fServerInfo.ServerName)
                                                             .Replace("%serverip%", fHost)
                                                             .Replace("%serverport%", fPort)
@@ -1128,54 +1079,54 @@ namespace PRoConEvents
                 mailSendThread.Name = "MailSendThread";
                 mailSendThread.Start();
             }
-            //if (EnableDiscordWebhookOnBlaze && type.CompareTo("BLAZE_DISCONNECT") == 0)
-            if(EnableDiscordWebhookOnBlaze)
+
+            if (EnableDiscordWebhookOnBlaze && type.CompareTo("BLAZE_DISCONNECT") == 0)
             {
                 String title = String.Empty;
-                String message = String.Empty;
+                String content = String.Empty;
 
                 Thread discordWebhookThread = new Thread(
                     delegate ()
                     {
                         if (DebugLevel >= 4)
                             ConsoleWrite("Preparing BlazeReport Discord notification...");
+                        // parse variables 
+                        title = WebhookTitle.Replace("%id%", InternalServerID.ToString())
+                                            .Replace("%gametype%", GameServerType)
+                                            .Replace("%shortservername%", ShortServerName)
+                                            .Replace("%servername%", fServerInfo.ServerName)
+                                            .Replace("%serverip%", fHost)
+                                            .Replace("%serverport%", fPort)
+                                            .Replace("%time%", utcTime)
+                                            .Replace("%playercount%", players)
+                                            .Replace("%map%", this.FriendlyMap)
+                                            .Replace("%gamemode%", this.FriendlyMode)
+                                            .Replace("%round%", round)
+                                            .Replace("%uptime%", upTime);
 
-                        title = WebhookSubject.Replace("%id%", InternalServerID.ToString())
-                                                          .Replace("%servername%", fServerInfo.ServerName)
-                                                          .Replace("%serverip%", fHost)
-                                                          .Replace("%serverport%", fPort)
-                                                          .Replace("%time%", utcTime)
-                                                          .Replace("%playercount%", players)
-                                                          .Replace("%map%", this.FriendlyMap)
-                                                          .Replace("%gamemode%", this.FriendlyMode)
-                                                          .Replace("%round%", round)
-                                                          .Replace("%uptime%", upTime);
-
-
-
-                        foreach (String messageLine in WebhookMessage)
+                        foreach (String contentLine in WebhookContent)
                         {
-                            message += messageLine.Replace("%id%", InternalServerID.ToString())
-                                                    .Replace("%servername%", fServerInfo.ServerName)
-                                                         .Replace("%serverip%", fHost)
-                                                         .Replace("%serverport%", fPort)
-                                                         .Replace("%time%", utcTime)
-                                                         .Replace("%playercount%", players)
-                                                         .Replace("%map%", this.FriendlyMap)
-                                                         .Replace("%gamemode%", this.FriendlyMode)
-                                                         .Replace("%round%", round)
-                                                         .Replace("%uptime%", upTime);
-                            message += "\n";
+                            content += contentLine.Replace("%id%", InternalServerID.ToString())
+                                                  .Replace("%gametype%", GameServerType)
+                                                  .Replace("%shortservername%", ShortServerName)
+                                                  .Replace("%servername%", fServerInfo.ServerName)
+                                                  .Replace("%serverip%", fHost)
+                                                  .Replace("%serverport%", fPort)
+                                                  .Replace("%time%", utcTime)
+                                                  .Replace("%playercount%", players)
+                                                  .Replace("%map%", this.FriendlyMap)
+                                                  .Replace("%gamemode%", this.FriendlyMode)
+                                                  .Replace("%round%", round)
+                                                  .Replace("%uptime%", upTime);
+                            content += "\n";
                         }
 
+                        // create and send the request to discord
                         DiscordWebhook notification = new DiscordWebhook(this, WebhookURL, WebhookAuthor, WebhookAvatarURL, WebhookColourCode, UseCustomWebhookAvatar);
-                        notification.sendNotification(title, message);
-                        ConsoleWrite(message);
+                        notification.sendNotification(title, content);
 
                         if (DebugLevel >= 3) ConsoleWrite("BlazeReport Discord notification sent successfully!");
-
                     }
-
                 );
                 discordWebhookThread.IsBackground = true;
                 discordWebhookThread.Name = "DiscordWebhookThread";
@@ -1183,63 +1134,70 @@ namespace PRoConEvents
             }
         }
 
-
         // Extension: Discord Hook
-        public class DiscordWebhook{
-            private FailLog logger;
+        public class DiscordWebhook
+        {
+            private FailLog plugin;
             public String URL;
             public String author;
             public String avatar;
-            public String title;
-            public String message;
             public int colour;
-            
+
             public bool useCustomAvatar;
 
-            public DiscordWebhook(FailLog logger, String URL, String author, String avatar, int colour, bool useCustomAvatar){
-                this.logger = logger;
+            public DiscordWebhook(FailLog plugin, String URL, String author, String avatar, int colour, bool useCustomAvatar)
+            {
+                this.plugin = plugin;
                 this.URL = URL;
                 this.author = author;
                 this.avatar = avatar;
                 this.colour = colour;
                 this.useCustomAvatar = useCustomAvatar;
             }
-            
-            public void sendNotification(String title, String message){
-                if (title == null || message == null){
-                    logger.ConsoleError("Unable to send FailLog to Discord. Title/Message empty.");
+
+            public void sendNotification(String title, String content)
+            {
+                if (title == null || content == null)
+                {
+                    plugin.ConsoleError("Unable to send FailLog to Discord. Title/Content empty.");
                     return;
                 }
+
+                // POST Body
+                // Doc: https://discordapp.com/developers/docs/resources/channel#embed-object
                 Hashtable embed = new Hashtable{
                     {"title", title},
-                    {"description", message},
+                    {"description", content},
                     {"color", colour},
                     {"timestamp", DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")},
                 };
-
-                logger.ConsoleWrite(URL);
-                ArrayList embeds = new ArrayList{embed};
+                ArrayList embeds = new ArrayList { embed };
 
                 Hashtable jsonTable = new Hashtable();
                 jsonTable["username"] = author;
                 jsonTable["embeds"] = embeds;
 
-                if(useCustomAvatar)
+                if (useCustomAvatar)
                     jsonTable["avatar_url"] = avatar;
 
                 String jsonBody = JSON.JsonEncode(jsonTable);
 
+                // Send request
                 post(jsonBody);
             }
 
-            public void post(String jsonBody){
-                try{
-                    if (String.IsNullOrEmpty(URL)){
-                        logger.ConsoleError("Discord WebHook URL empty! Unable to post report.");
+            public void post(String jsonBody)
+            {
+                try
+                {
+                    if (String.IsNullOrEmpty(URL))
+                    {
+                        plugin.ConsoleError("Discord WebHook URL empty! Unable to post report.");
                         return;
                     }
-                    if (String.IsNullOrEmpty(jsonBody)){
-                        logger.ConsoleError("Discord note body empty! Unable to post report.");
+                    if (String.IsNullOrEmpty(jsonBody))
+                    {
+                        plugin.ConsoleError("Discord JSON body empty! Unable to post report.");
                         return;
                     }
 
@@ -1251,17 +1209,17 @@ namespace PRoConEvents
                     Stream requestStream = request.GetRequestStream();
                     requestStream.Write(byteArray, 0, byteArray.Length);
                     requestStream.Close();
-                    logger.ConsoleWrite("test2");
-                    logger.ConsoleWrite(jsonBody + "hmmm");
                 }
-                catch (WebException e){
+                catch (WebException e)
+                {
                     WebResponse response = e.Response;
-                    logger.ConsoleError("Discord Webhook failed: " + new StreamReader(response.GetResponseStream()).ReadToEnd());
-                    logger.ConsoleException(e);
+                    plugin.ConsoleError("Discord Webhook notification failed: " + new StreamReader(response.GetResponseStream()).ReadToEnd());
+                    plugin.ConsoleException(e);
                 }
-                catch (Exception e){
-                    logger.ConsoleError("Error posting to Discord WebHook.");
-                    logger.ConsoleException(e);
+                catch (Exception e)
+                {
+                    plugin.ConsoleError("Error while posting to Discord WebHook.");
+                    plugin.ConsoleException(e);
                 }
             }
         }
@@ -1368,36 +1326,6 @@ namespace PRoConEvents
         private String EncodeBase64(String input)
         {
             return Convert.ToBase64String(Encoding.UTF8.GetBytes(input));
-        }
-
-        private void SendBlazeReport(NameValueCollection postData)
-        {
-            try
-            {
-                WebClient webClient = new WebClient();
-                String userAgent = "Mozilla/5.0 (compatible; Procon 1; FailLog)";
-                webClient.Headers.Add("user-agent", userAgent);
-
-                String url = String.Format("http://dev.myrcon.com/procon/blazereport/report.php?key=HhcF93olvLgHh9UTYlqs&ver={0}", EscapeRequestString(GetPluginVersion()));
-
-                String response = Encoding.UTF8.GetString(webClient.UploadValues(url, "POST", postData));
-
-                ConsoleDebug(response);
-
-                if (String.IsNullOrEmpty(response) || !response.Contains("Thank you for your Blaze Report!"))
-                {
-                    if (DebugLevel >= 3) ConsoleWarn("BlazeReport didn't contain valid response!");
-                }
-                else if (!String.IsNullOrEmpty(response) && response.Contains("Thank you for your Blaze Report!"))
-                {
-                    if (DebugLevel >= 3) ConsoleWrite("BlazeReport sent successfully!");
-                }
-            }
-            catch (Exception e)
-            {
-                if (DebugLevel >= 3) ConsoleError("Exception during SendBlazeReport");
-                ConsoleException(e);
-            }
         }
 
         private void ServerCommand(params String[] args)
@@ -1541,17 +1469,19 @@ namespace PRoConEvents
             }
         }
 
-        private void ValidateBattlelogServerLink(ref String val, String propName, String def)
+        private void ValidateImageURL(ref String val, String propName, String def)
         {
-            if (!val.Contains("http://battlelog.battlefield.com/bf3/servers/show/") && val.CompareTo(String.Empty) != 0)
+            if ((val.Contains("jpg") || !val.Contains("jpeg") || !val.Contains("png") || val.Contains("gif")) && val.Contains("http")
+                && val.CompareTo(String.Empty) != 0)
             {
-                ConsoleError("^b" + propName + "^n is no valid Battlelog server link, was set to " + val + ", corrected to " + def);
-                val = def;
                 return;
             }
+            ConsoleError("^b" + propName + "^n is no valid image link, was set to " + val + ", corrected to " + def);
+            val = def;
+            return;
         }
 
-        private void ValidateDiscordWebhookLink(ref String val, String propName, String def)
+        private void ValidateDiscordWebhookURL(ref String val, String propName, String def)
         {
             if (!val.Contains("https://discordapp.com/api/webhooks/") && val.CompareTo(String.Empty) != 0)
             {
@@ -1560,156 +1490,57 @@ namespace PRoConEvents
                 return;
             }
         }
+        private void ValidateDiscordWebhookAuthor(ref String val, String propName, String def)
+        {
+            if (val.CompareTo(String.Empty) == 0)
+            {
+                ConsoleError("^b" + propName + "^n is not a valid Discord author, was set to " + val + ", corrected to " + def);
+                val = def;
+                return;
+            }
+        }
 
 
         public void CheckForPluginUpdate()
         {
+            String latestVersion = "Unknown - Request failed!";
             try
             {
-                XmlDocument xml = new XmlDocument();
-                try
+                WebClient client = new WebClient();
+                String response;
+                response = client.DownloadString("https://gitlab.com/e4gl/fail-log/-/raw/master/version.json");
+                Hashtable json = (Hashtable)JSON.JsonDecode(response);
+
+                if (json.ContainsKey("version"))
                 {
-                    xml.Load("https://myrcon.com/procon/plugins/report/format/xml/plugin/FailLog");
-                }
-                catch (System.Security.SecurityException e)
-                {
-                    if (DebugLevel >= 8) ConsoleException(e);
-                    ConsoleWrite(" ");
-                    ConsoleWrite("^8^bNOTICE! Unable to check for plugin update!");
-                    ConsoleWrite("Tools => Options... => Plugins tab: ^bPlugin security^n is set to ^bRun plugins in a sandbox^n.");
-                    //ConsoleWrite("Please add ^bmyrcon.com^n to your trusted ^bOutgoing connections^n");
-                    ConsoleWrite("Consider changing to ^bRun plugins with no restrictions.^n");
-                    ConsoleWrite("Alternatively, check the ^bPlugins^n forum for an update to this plugin.");
-                    ConsoleWrite(" ");
-                    fLastVersionCheckTimestamp = DateTime.MaxValue;
-                    return;
-                }
-                if (DebugLevel >= 8) ConsoleDebug("CheckForPluginUpdate: Got " + xml.BaseURI);
-
-                /*
-                Example:
-                <report>
-                    <id>5132671</id>
-                    <plugin>
-                        <id>217948094</id>
-                        <uid>FailLog</uid>
-                        <name>FailLog</name>
-                    </plugin>
-                    <version>
-                        <id>965536</id>
-                        <major>1</major>
-                        <minor>0</minor>
-                        <maintenance>0</maintenance>
-                        <build>6</build>
-                    </version>
-                    <sum_in_use>22</sum_in_use>
-                    <avg_in_use>22.0000</avg_in_use>
-                    <max_in_use>22</max_in_use>
-                    <min_in_use>22</min_in_use>
-                    <stamp>2013-05-10 10:00:04</stamp>
-                </report>
-                */
-
-                XmlNodeList rows = xml.SelectNodes("//report");
-                if (DebugLevel >= 8) ConsoleDebug("CheckForPluginUpdate: # rows = " + rows.Count);
-                if (rows.Count == 0) return;
-                Dictionary<String, int> versions = new Dictionary<String, int>();
-                foreach (XmlNode tr in rows)
-                {
-                    XmlNode ver = tr.SelectSingleNode("version");
-                    XmlNode count = tr.SelectSingleNode("sum_in_use");
-                    if (ver != null && count != null)
-                    {
-                        int test = 0;
-                        XmlNode major = ver.SelectSingleNode("major");
-                        if (!Int32.TryParse(major.InnerText, out test)) continue;
-                        XmlNode minor = ver.SelectSingleNode("minor");
-                        if (!Int32.TryParse(minor.InnerText, out test)) continue;
-                        XmlNode maint = ver.SelectSingleNode("maintenance");
-                        if (!Int32.TryParse(maint.InnerText, out test)) continue;
-                        XmlNode build = ver.SelectSingleNode("build");
-                        if (!Int32.TryParse(build.InnerText, out test)) continue;
-                        String vt = major.InnerText + "." + minor.InnerText + "." + maint.InnerText + "." + build.InnerText;
-                        if (DebugLevel >= 8) ConsoleDebug("CheckForPluginUpdate: Version: " + vt + ", Count: " + count.InnerText);
-                        int n = 0;
-                        if (!Int32.TryParse(count.InnerText, out n)) continue;
-                        versions[vt] = n;
-                    }
-                }
-
-                // Select current version and any "later" versions
-                int usage = 0;
-                String myVersion = GetPluginVersion();
-                if (!versions.TryGetValue(myVersion, out usage))
-                {
-                    DebugWrite("CheckForPluginUpdate: my version " + myVersion + " not found!", 8);
-                    return;
-                }
-
-                // Update check time
-                fLastVersionCheckTimestamp = DateTime.Now;
-
-                // numeric sort
-                List<String> byNumeric = new List<String>();
-                byNumeric.AddRange(versions.Keys);
-                // Sort numerically descending
-                byNumeric.Sort(delegate (String lhs, String rhs)
-                {
-                    if (lhs == rhs) return 0;
-                    if (String.IsNullOrEmpty(lhs)) return 1;
-                    if (String.IsNullOrEmpty(rhs)) return -1;
-                    uint l = VersionToNumeric(lhs);
-                    uint r = VersionToNumeric(rhs);
-                    if (l < r) return 1;
-                    if (l > r) return -1;
-                    return 0;
-                });
-                DebugWrite("CheckForPluginUpdate: sorted version list:", 7);
-                foreach (String u in byNumeric)
-                {
-                    DebugWrite(u + " (" + String.Format("{0:X8}", VersionToNumeric(u)) + "), count = " + versions[u], 7);
-                }
-
-                int position = byNumeric.IndexOf(myVersion);
-
-                DebugWrite("CheckForPluginUpdate: found " + position + " newer versions", 5);
-
-                if (position != 0)
-                {
-                    // Newer versions found
-                    // Find the newest version with the largest number of usages
-                    int hasMost = -1;
-                    int most = 0;
-                    for (int i = position - 1; i >= 0; --i)
-                    {
-                        int newerVersionCount = versions[byNumeric[i]];
-                        if (hasMost == -1 || most < newerVersionCount)
-                        {
-                            // Skip newer versions that don't have enough usage yet
-                            if (most > 0 && newerVersionCount < MIN_UPDATE_USAGE_COUNT) continue;
-                            hasMost = i;
-                            most = versions[byNumeric[i]];
-                        }
-                    }
-
-                    if (hasMost != -1 && hasMost < byNumeric.Count && most >= MIN_UPDATE_USAGE_COUNT)
-                    {
-                        String newVersion = byNumeric[hasMost];
-                        ConsoleWrite("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                        ConsoleWrite(" ");
-                        ConsoleWrite("^8^bA NEW VERSION OF THIS PLUGIN IS AVAILABLE!");
-                        ConsoleWrite(" ");
-                        ConsoleWrite("^8^bPLEASE UPDATE TO VERSION: ^0" + newVersion);
-                        ConsoleWrite(" ");
-                        ConsoleWrite("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-
-                        TaskbarNotify(GetPluginName() + ": new version available!", "Please download and install " + newVersion);
-                    }
+                    latestVersion = (String)json["version"];
                 }
             }
             catch (Exception e)
             {
-                if (DebugLevel >= 8) ConsoleException(e);
+                ConsoleError("Unable to check for plugin updates!");
+                ConsoleError("Make sure that the plugin does not run in sandbox mode!");
+                ConsoleException(e);
+                fLastVersionCheckTimestamp = DateTime.MaxValue;
+                return;
+            }
+
+            if (DebugLevel >= 8) ConsoleDebug("CheckForPluginUpdate: Current version is " + latestVersion);
+
+            // update last update time
+            fLastVersionCheckTimestamp = DateTime.Now;
+
+            if (latestVersion.CompareTo(GetPluginVersion()) == 0)
+            {
+                ConsoleWrite("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                ConsoleWrite(" ");
+                ConsoleWrite("^8^bA NEW VERSION OF THIS PLUGIN IS AVAILABLE!");
+                ConsoleWrite(" ");
+                ConsoleWrite("^8^bPLEASE UPDATE TO VERSION: ^0" + latestVersion);
+                ConsoleWrite(" ");
+                ConsoleWrite("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
+                TaskbarNotify(GetPluginName() + ": new version available!", "Please download and install " + latestVersion);
             }
         }
 
