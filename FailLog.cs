@@ -1661,7 +1661,7 @@ namespace PRoConEvents
 <tr><td>Round</td><td>Current round/total rounds</td><td>1/2</td></tr>
 <tr><td>Players</td><td>vars.maxPlayers/previous known player count/current player count</td><td>64/63/0</td></tr>
 <tr><td>Uptime</td><td>Uptime of game server as days.hh:mm:ss</td><td>6.09:01:35</td></tr>
-<tr><td>Details</td><td>All of the information you entered in Section 2 of the settings, plus the Region and Country from serverInfo</td><td>&quot;Ranked Server Provider,Server Owner Or Community,Myrcon Forum User Name,Server Region,NAm/US,Additional Information&quot;</td></tr>
+<tr><td>Details</td><td>All of the information you entered in Section 2 of the settings</td><td>&quot;Game Server Type, Internal Server ID, Short Server Name&quot;</td></tr>
 </table></p>
 
 <h3>Blaze Disconnect Failures</h3>
@@ -1679,8 +1679,6 @@ namespace PRoConEvents
 
 <p><b>Log File</b>: Name of the file to use for logging. Defaults to &quot;fail.log&quot; and is stored in procon/Logs.</p>
 
-<p><b>Enable Web Log</b>: True or False, default True. If False, no logging is sent to the web database. If True, logging is also sent to the web database.</p>
-
 <p><b>Blaze Disconnect Heuristic Percent</b>: Number from 33 to 100, default 75. Not every sudden drop in players is a Blaze disconnect. Also, sometimes a Blaze disconnect does not disconnect all players or they reconnect before the next listPlayers event happens. This heuristic (guess) percentage accounts for those facts. The percentage is based on the ratio of the count of lost players to the last known count of players. For example, if you set this value to 75, it means any loss of 75% or more players should be treated as a Blaze disconnect. If there were 32 players before and now there are 10 players, (32-10)/32 = 69%, which is not greater than or equal to 75%, so no Blaze failure. If there were 32 players before and now there are no players, (32-0)/32 = 100%, a Blaze failure. If you want to only detect drops to zero players, set this value to 100. If the last known player count was less than 12, no detection is logged, even though a Blaze disconnect may have happened. See also <b>Blaze Disconnect Window Seconds</b>.</p>
 
 <p><b>Blaze Disconnect Window Seconds</b>: Number from 30 to 90, default 30. Normally, listPlayers events happen every 30 seconds and that is normally enough time to detect a Blaze disconnect. However, if you have lots of other plugins running, listPlayer events may happen more frequently than every 30 seconds, which may not be enough time to detect a large enough loss of players. Even if the interval between events is 30 seconds, sometimes a Blaze disconnect takes longer than 30 seconds to complete. This setting allows you to adjust the plugin to handle those situations. If you notice loss of players that you suspect are Blaze disconnects but no failure is registered, increase this value. Try 60 at first and if that isn't enough, add 15 seconds and try again, until you get to the max of 90 seconds.</p>
@@ -1689,30 +1687,28 @@ namespace PRoConEvents
 
 <p><b>Restart On Blaze Delay</b>: Number, default 0. Time in seconds to wait before invoking the admin.shutDown command after a Blaze disconnect. Use with caution, since most servers get messed up or don't save progress properly after a Blaze disconnect, so instant restarts would be advised. Setting it to 0 instantly executes the command.</p>
 
-<p><b>Enable Email On Blaze</b>: True or False, default False. If True, the plugin will send a notification-email if you server blazes (see settings below). Make sure to disable the sandbox or allow SMTP-connections and your mailserver + mailserver-port in the trusted hosts.</p>
+<p><b>Enable Email On Blaze/Crash</b>: True or False, default False. If True, the plugin will send a notification-email if you server blazes or crashes (see settings below). Make sure to disable the sandbox or allow SMTP-connections and your mailserver + mailserver-port in the trusted hosts.</p>
 
-<p><b>Enable Discord Message On Blaze</b>: True or False, default False. If True, the plugin will send a notification to a Discord webhook if you server blazes (see settings below). Make sure to disable the sandbox.</p>
+<p><b>Enable Discord Webhook On Blaze/Crash</b>: True or False, default False. If True, the plugin will send a notification to a Discord webhook if you server blazes or crashes (see settings below). Make sure to disable the sandbox.</p>
+
+<p><b>Min Online Players For Restart Notification</b>: Number from 0 to 64, default 4. The minimum amount of online players to classify a server restart as a server crash.</p>
+
 
 
 <h3>Section 2</h3>
-<p>These settings fully describe your server for logging purposes. Information important for tracking global outages and that can't be extracted from known data is included. All of this information is optional.</p>
+<p>These settings fully describe your server for logging purposes. Information that can't be extracted from known data is included. All of this information is optional.</p>
 
-<p><b>Game Server Type</b>: Type of game server, defaults to BF3.</p>
+<p><b>Game Server Type</b>: Type of game server, defaults to BF4.</p>
 
-<p><b>Ranked Server Provider</b>: Name of the RSP/GSP that hosts your game server.</p>
+<p><b>Internal Server ID</b>: Number from 0 to 20, default 1. Your internal server id.</p>
 
-<p><b>Server Owner Or Community</b>: Your name or the name of your clan, whoever runs the server. Technically you are a 'renter' rather than an owner, but you are responsible for the game server.</p>
+<p><b>Short Server Name</b>: A short version of your server's name. E.g.: #1 Locker</p>
 
-<p><b>Contact Info</b>: Email address, clan website or your myrcon.com forum user name, to follow-up with you if additional information is needed.</p>
 
-<p><b>Server Region</b>: The Country and Region known by serverInfo in automatically included, but that information is very high level, su as NAm/US. Use this setting to specify the city, state or to narrow down the region further.</p>
 
-<p><b>Battlelog Link</b>: Link to your server at Battlelog (e.g. http://battlelog.battlefield.com/bf3/servers/show/5474dcd7-6331-402e-a874-c0861c646162/PRoCon-Plugin-Testserver/). Will be added to the BlazeReport-overview page if available.</p>
-
-<p><b>Additional Information</b>: These are additional details that were not anticpated at the time of writing of this plugin but that may prove useful in the future.</p>
 
 <h3>Section 3</h3>
-<p>These settings configure the BlazeReport-mail being sent. The following values can be entered as wildcards at the email-subject and email-body and will be replaced: %servername%, %serverip%, %serverport%, %utc%, %players%, %map%, %gamemode%, %round%, %uptime%.</p>
+<p>These settings configure the BlazeReport-mail being sent. The following values can be entered as wildcards at the email-subject and email-body and will be replaced: %id%, %gametype%, %servernameshort%, %servername%, %serverip%, %serverport%, %utc%, %players%, %map%, %gamemode%, %round%, %uptime%.</p>
 
 <p><b>Email Recipients</b>: List of email-addresses to send the notifications to, one each line.</p>
 
@@ -1726,23 +1722,37 @@ namespace PRoConEvents
 
 <p><b>SMTP Port</b>: Number between 0 and 65535, default 25. Port of the SMTP-Server used to send email.</p>
 
-<p><b>SMTP Use SSL</b>: True of False, default false. Toggles the usage of SSL for the connection to your SMTP-server.</p>
+<p><b>SMTP Use SSL</b>: True of False, default true. Toggles the usage of SSL for the connection to your SMTP-server.</p>
 
 <p><b>SMTP Username</b>: Username used to identify with your SMTP-server.</p>
 
 <p><b>SMTP Password</b>: Password used to identify with your SMTP-server.</p>
 
+
 <h3>Section 4</h3>
-<p>These settings configure the BlazeReport-Discord Message being sent. The following values can be entered as wildcards at the Message-subject and Message-body and will be replaced: %servername%, %serverip%, %serverport%, %utc%, %players%, %map%, %gamemode%, %round%, %uptime%.</p>
-<p><b>Discord Webhook URL</b>: Full URL of your Discord Webhook.</p>
+<p>These settings configure the BlazeReport-Discord embed notification being sent. The following values can be entered as wildcards at the Message-subject and Message-content and will be replaced: %id%, %gametype%, %servernameshort%, %servername%, %serverip%, %serverport%, %utc%, %players%, %map%, %gamemode%, %round%, %uptime%.</p>
+
+<p><b>Webhook Author</b>: The author of the discord notification, default FailLog.</p>
+
+<p><b>Use Custom Webhook Avatar</b>: True or False, default False. Define a custom webhook avatar or use the default avatar.</p>
+
+<p><b>Webhook Avatar URL</b>: Full URL for the webhook avatar.</p>
+
+<p><b>Webhook Title</b>: Title of the discord notification. You can use the values listed above to add information about the BlazeReport.</p>
+
+<p><b>Webhook Colour Code</b>: Number, default 0xff0000 (red). Colour of the discord embed notification</p>
+
+<p><b>Webhook Content</b>: Content of the discord notification. You can use the values listed above to add information about the BlazeReport.</p>
+
+<p><b>Discord Webhook URL</b>: Full URL of your Discord webhook.</p>
 
 
 
 
 <h2>Development</h2>
 <p>This plugin is an open source project hosted on GitLab.com. The repo is located at
-<a href='https://gitlab.com/Hedius/fail-log'>https://gitlab.com/Hedius/fail-log</a> and
-the master branch is used for public distributions. See the <a href='https://gitlab.com/Hedius/fail-log/tags'>Tags</a> tab for the latest ZIP distributions. If you would like to offer bug fixes or new features, feel
+<a href='https://gitlab.com/e4gl/fail-log'>https://gitlab.com/e4gl/fail-log</a> and
+the master branch is used for public distributions. See the <a href='https://gitlab.com/e4gl/fail-log/tags'>Tags</a> tab for the latest ZIP distributions. If you would like to offer bug fixes or new features, feel
 free to fork the repo and submit pull requests.</p>
 ";
 
