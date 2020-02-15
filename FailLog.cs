@@ -76,6 +76,10 @@ namespace PRoConEvents
 
         public const int MIN_UPDATE_USAGE_COUNT = 10; // minimum number of plugin updates in use
 
+        public const String WebhookURLDefault = "https://discordapp.com/api/webhooks/ID/SECRET";
+
+        public const String WebhookAvatarURLDefault = "https://upload.wikimedia.org/wikipedia/commons/f/fc/Trinity_Detonation_T%26B.jpg";
+
         /* Classes */
 
         /* Inherited:
@@ -125,8 +129,9 @@ namespace PRoConEvents
         public double BlazeDisconnectWindowSeconds;
         public bool EnableRestartOnBlaze;
         public int RestartOnBlazeDelay;
-        public bool EnableEmailOnBlaze;
-        public bool EnableDiscordWebhookOnBlaze;
+        public bool EnableEmailOnBlazeCrash;
+        public bool EnableDiscordWebhookOnBlazeCrash;
+        public int MinOnlinePlayersForRestartCrashNotification;
 
         /* ===== SECTION 2 - Server Description ===== */
 
@@ -154,6 +159,7 @@ namespace PRoConEvents
         public int WebhookColourCode;
         public List<String> WebhookContent;
         public String WebhookURL;
+
 
         /* Constructor */
 
@@ -210,14 +216,15 @@ namespace PRoConEvents
             BlazeDisconnectWindowSeconds = 30;
             EnableRestartOnBlaze = false;
             RestartOnBlazeDelay = 0;
-            EnableEmailOnBlaze = false;
-            EnableDiscordWebhookOnBlaze = false;
+            EnableEmailOnBlazeCrash = false;
+            EnableDiscordWebhookOnBlazeCrash = false;
+            MinOnlinePlayersForRestartCrashNotification = 4;
 
             /* ===== SECTION 2 - Server Description ===== */
 
             GameServerType = "BF4";
             InternalServerID = 1;
-            ShortServerName = "CHANGE ME: Short verserion of your server name";
+            ShortServerName = "CHANGE ME: Short version of your server name (e.g.: #1 Locker)";
 
             /* ===== SECTION 3 - Email Settings ===== */
 
@@ -228,7 +235,7 @@ namespace PRoConEvents
             EmailMessage = new List<String>();
             EmailMessage.Add("<h2 align=\"center\">FailLog - BlazeReport</h2>");
             EmailMessage.Add("<p>Your server %id% '%servername%' just blazed/crashed!<br />");
-            EmailMessage.Add("Here's some information about the Blaze:</p>");
+            EmailMessage.Add("Here's some information about the Blaze/Crash:</p>");
             EmailMessage.Add("<table border=\"1\">");
             EmailMessage.Add("<tr><th>Field</th><th>Value</th></tr>");
             EmailMessage.Add("<tr><td align=\"center\">UTC</td><td align=\"center\">%time%</td></tr>");
@@ -252,28 +259,26 @@ namespace PRoConEvents
 
             WebhookAuthor = "FailLog";
             UseCustomWebhookAvatar = false;
-            WebhookAvatarURL = "https://upload.wikimedia.org/wikipedia/commons/f/fc/Trinity_Detonation_T%26B.jpg";
+            WebhookAvatarURL = WebhookAvatarURLDefault;
             WebhookTitle = "Server %id% - %shortservername% blazed/crashed!";
             WebhookColourCode = 0xff0000;
 
             WebhookContent = new List<String>();
-            WebhookContent.Add("**FailLog - BlazeReport**");
-            WebhookContent.Add("Server **%id%: %shortservername%** just blazed/crashed!");
-            WebhookContent.Add(">> **UTC**: %time%");
-            WebhookContent.Add(">> **ID**: %id");
-            WebhookContent.Add(">> **Server**: %shortservername%");
-            WebhookContent.Add(">> **Server(Long)**: %servername%");
-            WebhookContent.Add(">> **Players**: %playercount%");
-            WebhookContent.Add(">> **Map**: %map%");
-            WebhookContent.Add(">> **Gamemode**: %gamemode%");
-            WebhookContent.Add(">> **Round**: %round%");
-            WebhookContent.Add(">> **Uptime**: %uptime%");
+            WebhookContent.Add("**FailLog - BlazeReport**:");
+            WebhookContent.Add("> **UTC**: %time%");
+            WebhookContent.Add("> **ID**: %id%");
+            WebhookContent.Add("> **Server**: %shortservername%");
+            WebhookContent.Add("> **Server(Long)**: %servername%");
+            WebhookContent.Add("> **Players**: %playercount%");
+            WebhookContent.Add("> **Map**: %map%");
+            WebhookContent.Add("> **Gamemode**: %gamemode%");
+            WebhookContent.Add("> **Round**: %round%");
+            WebhookContent.Add("> **Uptime**: %uptime%");
 
-            WebhookURL = "https://discordapp.com/api/webhooks/ID/SECRET";
+            WebhookURL = WebhookURLDefault;
         }
 
         // Properties
-
         public String FriendlyMap
         {
             get
@@ -283,6 +288,7 @@ namespace PRoConEvents
                 return (fFriendlyMaps.TryGetValue(fServerInfo.Map, out r)) ? r : fServerInfo.Map;
             }
         }
+
         public String FriendlyMode
         {
             get
@@ -310,7 +316,7 @@ namespace PRoConEvents
 
         public String GetPluginWebsite()
         {
-            return "https://gitlab.com/e4gl/fail-log";
+            return "gitlab.com/e4gl/fail-log";
         }
 
         public String GetPluginDescription()
@@ -349,9 +355,15 @@ namespace PRoConEvents
                     lstReturn.Add(new CPluginVariable("1 - Settings|Restart On Blaze Delay", RestartOnBlazeDelay.GetType(), RestartOnBlazeDelay));
                 }
 
-                lstReturn.Add(new CPluginVariable("1 - Settings|Enable Email On Blaze", EnableEmailOnBlaze.GetType(), EnableEmailOnBlaze));
+                lstReturn.Add(new CPluginVariable("1 - Settings|Enable Email On Blaze/Crash", EnableEmailOnBlazeCrash.GetType(), EnableEmailOnBlazeCrash));
 
-                lstReturn.Add(new CPluginVariable("1 - Settings|Enable Discord Webhook On Blaze", EnableDiscordWebhookOnBlaze.GetType(), EnableDiscordWebhookOnBlaze));
+                lstReturn.Add(new CPluginVariable("1 - Settings|Enable Discord Webhook On Blaze/Crash", EnableDiscordWebhookOnBlazeCrash.GetType(), EnableDiscordWebhookOnBlazeCrash));
+
+                if (EnableEmailOnBlazeCrash || EnableDiscordWebhookOnBlazeCrash)
+                {
+                    lstReturn.Add(new CPluginVariable("1 - Settings|Min Online Players For Restart/Crash Notification",
+                                  MinOnlinePlayersForRestartCrashNotification.GetType(), MinOnlinePlayersForRestartCrashNotification));
+                }
 
                 /* ===== SECTION 2 - Server Description ===== */
 
@@ -364,7 +376,7 @@ namespace PRoConEvents
 
                 /* ===== SECTION 3 - Email Settings ===== */
 
-                if (EnableEmailOnBlaze)
+                if (EnableEmailOnBlazeCrash)
                 {
                     lstReturn.Add(new CPluginVariable("3 - Email Settings|Email Recipients", typeof(String[]), EmailRecipients.ToArray()));
 
@@ -386,7 +398,7 @@ namespace PRoConEvents
                 }
 
                 /* ===== SECTION 4 - Discord Settings ===== */
-                if (EnableDiscordWebhookOnBlaze)
+                if (EnableDiscordWebhookOnBlazeCrash)
                 {
                     lstReturn.Add(new CPluginVariable("4 - Discord Settings|Webhook Author", WebhookAuthor.GetType(), WebhookAuthor));
 
@@ -514,6 +526,11 @@ namespace PRoConEvents
                 {
                     ValidateDoubleRange(ref BlazeDisconnectWindowSeconds, "Blaze Disconnect Window Seconds", 30, 90, 30, false);
                 }
+                else if (strVariable.Contains("Min Online Players For Restart/Crash Notification"))
+                {
+                    ValidateIntRange(ref MinOnlinePlayersForRestartCrashNotification, "Min Online Players For Restart/Crash Notification",
+                                     0, 64, 4, false);
+                }
                 else if (strVariable.Contains("SMTP Port"))
                 {
                     ValidateIntRange(ref SMTPPort, "SMTP Port", 0, 65535, 25, false);
@@ -524,8 +541,7 @@ namespace PRoConEvents
                 }
                 else if (strVariable.Contains("Webhook Avatar URL"))
                 {
-                    ValidateImageURL(ref WebhookAvatarURL, "Webhook Avatar URL",
-                                     "https://upload.wikimedia.org/wikipedia/commons/f/fc/Trinity_Detonation_T%26B.jpg");
+                    ValidateImageURL(ref WebhookAvatarURL, "Webhook Avatar URL", WebhookAvatarURLDefault);
                 }
                 else if (strVariable.Contains("Webhook Colour Code"))
                 {
@@ -534,7 +550,7 @@ namespace PRoConEvents
                 }
                 else if (strVariable.Contains("Webhook URL"))
                 {
-                    ValidateDiscordWebhookURL(ref WebhookURL, "Webhook URL", "https://discordapp.com/api/webhooks/ID/SECRET");
+                    ValidateDiscordWebhookURL(ref WebhookURL, "Webhook URL", WebhookURLDefault);
                 }
             }
             catch (Exception e)
@@ -1002,135 +1018,140 @@ namespace PRoConEvents
                 ServerLog(LogFile, line);
             }
 
-            if (EnableEmailOnBlaze && type.CompareTo("BLAZE_DISCONNECT") == 0)
+            if (type.CompareTo("BLAZE_DISCONNECTS") == 0
+                || (type.CompareTo("GAME_SERVER_RESTART") == 0 && lastPlayerCount >= MinOnlinePlayersForRestartCrashNotification))
             {
-                Thread mailSendThread = new Thread(
-                    delegate ()
-                    {
-                        try
+
+                if (EnableEmailOnBlazeCrash)
+                {
+                    Thread mailSendThread = new Thread(
+                        delegate ()
                         {
-                            if (DebugLevel >= 4) ConsoleWrite("Preparing BlazeReport-email...");
-
-                            SmtpClient smtpClient = new SmtpClient(SMTPHostname, SMTPPort);
-                            smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
-                            smtpClient.UseDefaultCredentials = false;
-                            smtpClient.Credentials = new NetworkCredential(SMTPUsername, SMTPPassword);
-                            smtpClient.EnableSsl = SMTPUseSSL;
-                            smtpClient.Timeout = 30000;
-
-                            MailMessage mailMessage = new MailMessage();
-                            mailMessage.From = new MailAddress(EmailSender, "FailLog - " + EmailSender);
-                            foreach (String address in EmailRecipients)
+                            try
                             {
-                                mailMessage.To.Add(new MailAddress(address, address));
+                                if (DebugLevel >= 4) ConsoleWrite("Preparing BlazeReport-email...");
+
+                                SmtpClient smtpClient = new SmtpClient(SMTPHostname, SMTPPort);
+                                smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
+                                smtpClient.UseDefaultCredentials = false;
+                                smtpClient.Credentials = new NetworkCredential(SMTPUsername, SMTPPassword);
+                                smtpClient.EnableSsl = SMTPUseSSL;
+                                smtpClient.Timeout = 30000;
+
+                                MailMessage mailMessage = new MailMessage();
+                                mailMessage.From = new MailAddress(EmailSender, "FailLog - " + EmailSender);
+                                foreach (String address in EmailRecipients)
+                                {
+                                    mailMessage.To.Add(new MailAddress(address, address));
+                                }
+                                mailMessage.Subject = EmailSubject.Replace("%id%", InternalServerID.ToString())
+                                                                  .Replace("%gametype%", GameServerType)
+                                                                  .Replace("%shortservername%", ShortServerName)
+                                                                  .Replace("%servername%", fServerInfo.ServerName)
+                                                                  .Replace("%serverip%", fHost)
+                                                                  .Replace("%serverport%", fPort)
+                                                                  .Replace("%time%", utcTime)
+                                                                  .Replace("%playercount%", players)
+                                                                  .Replace("%map%", this.FriendlyMap)
+                                                                  .Replace("%gamemode%", this.FriendlyMode)
+                                                                  .Replace("%round%", round)
+                                                                  .Replace("%uptime%", upTime);
+                                mailMessage.SubjectEncoding = System.Text.Encoding.UTF8;
+                                mailMessage.Body = String.Empty;
+                                foreach (String bodyLine in EmailMessage)
+                                {
+                                    mailMessage.Body += bodyLine.Replace("%id%", InternalServerID.ToString())
+                                                                .Replace("%gametype%", GameServerType)
+                                                                .Replace("%shortservername%", ShortServerName)
+                                                                .Replace("%servername%", fServerInfo.ServerName)
+                                                                .Replace("%serverip%", fHost)
+                                                                .Replace("%serverport%", fPort)
+                                                                .Replace("%time%", utcTime)
+                                                                .Replace("%playercount%", players)
+                                                                .Replace("%map%", this.FriendlyMap)
+                                                                .Replace("%gamemode%", this.FriendlyMode)
+                                                                .Replace("%round%", round)
+                                                                .Replace("%uptime%", upTime);
+                                }
+                                mailMessage.BodyEncoding = System.Text.Encoding.UTF8;
+                                mailMessage.IsBodyHtml = true;
+                                mailMessage.DeliveryNotificationOptions = DeliveryNotificationOptions.OnFailure;
+                                mailMessage.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(mailMessage.Body, new ContentType("text/html")));
+
+                                if (DebugLevel >= 7)
+                                {
+                                    ConsoleWrite("BlazeReport-email:");
+                                    ConsoleWrite("Subject: " + mailMessage.Subject);
+                                    ConsoleWrite("Body: " + mailMessage.Body);
+                                }
+
+                                smtpClient.Send(mailMessage);
+
+                                if (DebugLevel >= 3) ConsoleWrite("BlazeReport-email sent successfully!");
                             }
-                            mailMessage.Subject = EmailSubject.Replace("%id%", InternalServerID.ToString())
-                                                              .Replace("%gametype%", GameServerType)
-                                                              .Replace("%shortservername%", ShortServerName)
-                                                              .Replace("%servername%", fServerInfo.ServerName)
-                                                              .Replace("%serverip%", fHost)
-                                                              .Replace("%serverport%", fPort)
-                                                              .Replace("%time%", utcTime)
-                                                              .Replace("%playercount%", players)
-                                                              .Replace("%map%", this.FriendlyMap)
-                                                              .Replace("%gamemode%", this.FriendlyMode)
-                                                              .Replace("%round%", round)
-                                                              .Replace("%uptime%", upTime);
-                            mailMessage.SubjectEncoding = System.Text.Encoding.UTF8;
-                            mailMessage.Body = String.Empty;
-                            foreach (String bodyLine in EmailMessage)
+                            catch (Exception e)
                             {
-                                mailMessage.Body += bodyLine.Replace("%id%", InternalServerID.ToString())
-                                                            .Replace("%gametype%", GameServerType)
-                                                            .Replace("%shortservername%", ShortServerName)
-                                                            .Replace("%servername%", fServerInfo.ServerName)
-                                                            .Replace("%serverip%", fHost)
-                                                            .Replace("%serverport%", fPort)
-                                                            .Replace("%time%", utcTime)
-                                                            .Replace("%playercount%", players)
-                                                            .Replace("%map%", this.FriendlyMap)
-                                                            .Replace("%gamemode%", this.FriendlyMode)
-                                                            .Replace("%round%", round)
-                                                            .Replace("%uptime%", upTime);
+                                if (DebugLevel >= 3) ConsoleError("Exception while sending BlazeReport-email");
+                                ConsoleException(e);
                             }
-                            mailMessage.BodyEncoding = System.Text.Encoding.UTF8;
-                            mailMessage.IsBodyHtml = true;
-                            mailMessage.DeliveryNotificationOptions = DeliveryNotificationOptions.OnFailure;
-                            mailMessage.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(mailMessage.Body, new ContentType("text/html")));
+                        });
+                    mailSendThread.IsBackground = true;
+                    mailSendThread.Name = "MailSendThread";
+                    mailSendThread.Start();
+                }
 
-                            if (DebugLevel >= 7)
-                            {
-                                ConsoleWrite("BlazeReport-email:");
-                                ConsoleWrite("Subject: " + mailMessage.Subject);
-                                ConsoleWrite("Body: " + mailMessage.Body);
-                            }
+                if (EnableDiscordWebhookOnBlazeCrash)
+                {
+                    String title = String.Empty;
+                    String content = String.Empty;
 
-                            smtpClient.Send(mailMessage);
-
-                            if (DebugLevel >= 3) ConsoleWrite("BlazeReport-email sent successfully!");
-                        }
-                        catch (Exception e)
+                    Thread discordWebhookThread = new Thread(
+                        delegate ()
                         {
-                            if (DebugLevel >= 3) ConsoleError("Exception while sending BlazeReport-email");
-                            ConsoleException(e);
-                        }
-                    });
-                mailSendThread.IsBackground = true;
-                mailSendThread.Name = "MailSendThread";
-                mailSendThread.Start();
-            }
-
-            if (EnableDiscordWebhookOnBlaze && type.CompareTo("BLAZE_DISCONNECT") == 0)
-            {
-                String title = String.Empty;
-                String content = String.Empty;
-
-                Thread discordWebhookThread = new Thread(
-                    delegate ()
-                    {
-                        if (DebugLevel >= 4)
-                            ConsoleWrite("Preparing BlazeReport Discord notification...");
+                            if (DebugLevel >= 4)
+                                ConsoleWrite("Preparing BlazeReport Discord notification...");
                         // parse variables 
                         title = WebhookTitle.Replace("%id%", InternalServerID.ToString())
-                                            .Replace("%gametype%", GameServerType)
-                                            .Replace("%shortservername%", ShortServerName)
-                                            .Replace("%servername%", fServerInfo.ServerName)
-                                            .Replace("%serverip%", fHost)
-                                            .Replace("%serverport%", fPort)
-                                            .Replace("%time%", utcTime)
-                                            .Replace("%playercount%", players)
-                                            .Replace("%map%", this.FriendlyMap)
-                                            .Replace("%gamemode%", this.FriendlyMode)
-                                            .Replace("%round%", round)
-                                            .Replace("%uptime%", upTime);
+                                                .Replace("%gametype%", GameServerType)
+                                                .Replace("%shortservername%", ShortServerName)
+                                                .Replace("%servername%", fServerInfo.ServerName)
+                                                .Replace("%serverip%", fHost)
+                                                .Replace("%serverport%", fPort)
+                                                .Replace("%time%", utcTime)
+                                                .Replace("%playercount%", players)
+                                                .Replace("%map%", this.FriendlyMap)
+                                                .Replace("%gamemode%", this.FriendlyMode)
+                                                .Replace("%round%", round)
+                                                .Replace("%uptime%", upTime);
 
-                        foreach (String contentLine in WebhookContent)
-                        {
-                            content += contentLine.Replace("%id%", InternalServerID.ToString())
-                                                  .Replace("%gametype%", GameServerType)
-                                                  .Replace("%shortservername%", ShortServerName)
-                                                  .Replace("%servername%", fServerInfo.ServerName)
-                                                  .Replace("%serverip%", fHost)
-                                                  .Replace("%serverport%", fPort)
-                                                  .Replace("%time%", utcTime)
-                                                  .Replace("%playercount%", players)
-                                                  .Replace("%map%", this.FriendlyMap)
-                                                  .Replace("%gamemode%", this.FriendlyMode)
-                                                  .Replace("%round%", round)
-                                                  .Replace("%uptime%", upTime);
-                            content += "\n";
-                        }
+                            foreach (String contentLine in WebhookContent)
+                            {
+                                content += contentLine.Replace("%id%", InternalServerID.ToString())
+                                                      .Replace("%gametype%", GameServerType)
+                                                      .Replace("%shortservername%", ShortServerName)
+                                                      .Replace("%servername%", fServerInfo.ServerName)
+                                                      .Replace("%serverip%", fHost)
+                                                      .Replace("%serverport%", fPort)
+                                                      .Replace("%time%", utcTime)
+                                                      .Replace("%playercount%", players)
+                                                      .Replace("%map%", this.FriendlyMap)
+                                                      .Replace("%gamemode%", this.FriendlyMode)
+                                                      .Replace("%round%", round)
+                                                      .Replace("%uptime%", upTime);
+                                content += "\n";
+                            }
 
                         // create and send the request to discord
                         DiscordWebhook notification = new DiscordWebhook(this, WebhookURL, WebhookAuthor, WebhookAvatarURL, WebhookColourCode, UseCustomWebhookAvatar);
-                        notification.sendNotification(title, content);
+                            notification.sendNotification(title, content);
 
-                        if (DebugLevel >= 3) ConsoleWrite("BlazeReport Discord notification sent successfully!");
-                    }
-                );
-                discordWebhookThread.IsBackground = true;
-                discordWebhookThread.Name = "DiscordWebhookThread";
-                discordWebhookThread.Start();
+                            if (DebugLevel >= 3) ConsoleWrite("BlazeReport Discord notification sent successfully!");
+                        }
+                    );
+                    discordWebhookThread.IsBackground = true;
+                    discordWebhookThread.Name = "DiscordWebhookThread";
+                    discordWebhookThread.Start();
+                }
             }
         }
 
@@ -1511,9 +1532,20 @@ namespace PRoConEvents
                 response = client.DownloadString("https://gitlab.com/e4gl/fail-log/-/raw/master/version.json");
                 Hashtable json = (Hashtable)JSON.JsonDecode(response);
 
-                if (json.ContainsKey("version"))
+                if (json == null)
+                {
+                    ConsoleError("Update check failed - gitlab.com/e4gl/fail-log is private! Please contact the maintainer Hedius!");
+                    return;
+                }
+
+                if (json.ContainsKey("latest_version"))
                 {
                     latestVersion = (String)json["latest_version"];
+                }
+                else
+                {
+                    ConsoleError("Update check failed - Cannot extract latest version! Please contact the maintainer Hedius!");
+                    return;
                 }
             }
             catch (Exception e)
@@ -1530,7 +1562,7 @@ namespace PRoConEvents
             // update last update time
             fLastVersionCheckTimestamp = DateTime.Now;
 
-            if (latestVersion.CompareTo(GetPluginVersion()) == 0)
+            if (latestVersion.CompareTo(GetPluginVersion()) != 0)
             {
                 ConsoleWrite("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                 ConsoleWrite(" ");
