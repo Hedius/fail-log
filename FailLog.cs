@@ -1050,6 +1050,7 @@ namespace PRoConEvents
                                                                   .Replace("%serverip%", fHost)
                                                                   .Replace("%serverport%", fPort)
                                                                   .Replace("%time%", utcTime)
+                                                                  .Replace("%utc%", utcTime)
                                                                   .Replace("%playercount%", players)
                                                                   .Replace("%map%", this.FriendlyMap)
                                                                   .Replace("%gamemode%", this.FriendlyMode)
@@ -1068,6 +1069,7 @@ namespace PRoConEvents
                                                                 .Replace("%serverip%", fHost)
                                                                 .Replace("%serverport%", fPort)
                                                                 .Replace("%time%", utcTime)
+                                                                .Replace("%utc%", utcTime)
                                                                 .Replace("%playercount%", players)
                                                                 .Replace("%map%", this.FriendlyMap)
                                                                 .Replace("%gamemode%", this.FriendlyMode)
@@ -1121,6 +1123,7 @@ namespace PRoConEvents
                                                 .Replace("%serverip%", fHost)
                                                 .Replace("%serverport%", fPort)
                                                 .Replace("%time%", utcTime)
+                                                .Replace("%utc%", utcTime)
                                                 .Replace("%playercount%", players)
                                                 .Replace("%map%", this.FriendlyMap)
                                                 .Replace("%gamemode%", this.FriendlyMode)
@@ -1137,6 +1140,7 @@ namespace PRoConEvents
                                                       .Replace("%serverip%", fHost)
                                                       .Replace("%serverport%", fPort)
                                                       .Replace("%time%", utcTime)
+                                                      .Replace("%utc%", utcTime)
                                                       .Replace("%playercount%", players)
                                                       .Replace("%map%", this.FriendlyMap)
                                                       .Replace("%gamemode%", this.FriendlyMode)
@@ -1714,7 +1718,7 @@ namespace PRoConEvents
 
 
 <h3>Section 3</h3>
-<p>These settings configure the BlazeReport-mail being sent. The following values can be entered as wildcards at the email-subject and email-body and will be replaced: %id%, %gametype%, %shortservername%, %servername%, %serverip%, %serverport%, %utc%, %players%, %map%, %gamemode%, %round%, %uptime%, %type%.</p>
+<p>These settings configure the BlazeReport-mail being sent. The following values can be entered as wildcards at the email-subject and email-body and will be replaced: %id%, %gametype%, %shortservername%, %servername%, %serverip%, %serverport%, %utc% / %time%, %players%, %map%, %gamemode%, %round%, %uptime%, %type%.</p>
 
 <p><b>Email Recipients</b>: List of email-addresses to send the notifications to, one each line.</p>
 
@@ -1736,7 +1740,7 @@ namespace PRoConEvents
 
 
 <h3>Section 4</h3>
-<p>These settings configure the BlazeReport-Discord embed notification being sent. The following values can be entered as wildcards at the Message-subject and Message-content and will be replaced: %id%, %gametype%, %shortservername%, %servername%, %serverip%, %serverport%, %utc%, %players%, %map%, %gamemode%, %round%, %uptime%, %type%.</p>
+<p>These settings configure the BlazeReport-Discord embed notification being sent. The following values can be entered as wildcards at the Message-subject and Message-content and will be replaced: %id%, %gametype%, %shortservername%, %servername%, %serverip%, %serverport%, %utc% / %time%, %players%, %map%, %gamemode%, %round%, %uptime%, %type%.</p>
 
 <p><b>Webhook Author</b>: The author of the discord notification, default FailLog.</p>
 
