@@ -1019,7 +1019,7 @@ namespace PRoConEvents
                 ServerLog(LogFile, line);
             }
 
-            if (type.CompareTo("BLAZE_DISCONNECTS") == 0
+            if (type.CompareTo("BLAZE_DISCONNECT") == 0
                 || (type.CompareTo("GAME_SERVER_RESTART") == 0 && lastPlayerCount >= MinOnlinePlayersForRestartCrashNotification))
             {
 
