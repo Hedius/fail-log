@@ -237,6 +237,7 @@ namespace PRoConEvents
             EmailMessage.Add("Here's some information about the Blaze/Crash:</p>");
             EmailMessage.Add("<table border=\"1\">");
             EmailMessage.Add("<tr><th>Field</th><th>Value</th></tr>");
+            EmailMessage.Add("<tr><td align=\"center\">Type</td><td align=\"center\">%type%</td></tr>");
             EmailMessage.Add("<tr><td align=\"center\">UTC</td><td align=\"center\">%time%</td></tr>");
             EmailMessage.Add("<tr><td align=\"center\">Server</td><td align=\"center\">%shortservername%</td></tr>");
             EmailMessage.Add("<tr><td align=\"center\">Server(Long)</td><td align=\"center\">%servername%</td></tr>");
@@ -263,7 +264,8 @@ namespace PRoConEvents
             WebhookColourCode = 0xff0000;
 
             WebhookContent = new List<String>();
-            WebhookContent.Add("**FailLog - BlazeReport**:");
+            WebhookContent.Add("**FailLog** - **BlazeReport**:");
+            WebhookContent.Add("> **Type**: %type%");
             WebhookContent.Add("> **UTC**: %time%");
             WebhookContent.Add("> **ID**: %id%");
             WebhookContent.Add("> **Server**: %shortservername%");
