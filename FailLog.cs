@@ -1044,7 +1044,7 @@ namespace PRoConEvents
                                     mailMessage.To.Add(new MailAddress(address, address));
                                 }
                                 mailMessage.Subject = EmailSubject.Replace("%id%", InternalServerID.ToString())
-                                                                  .Replace("%gametype%", GameServerType)
+                                                                  .Replace("%gameservertype%", GameServerType)
                                                                   .Replace("%shortservername%", ShortServerName)
                                                                   .Replace("%servername%", fServerInfo.ServerName)
                                                                   .Replace("%serverip%", fHost)
@@ -1054,13 +1054,15 @@ namespace PRoConEvents
                                                                   .Replace("%map%", this.FriendlyMap)
                                                                   .Replace("%gamemode%", this.FriendlyMode)
                                                                   .Replace("%round%", round)
-                                                                  .Replace("%uptime%", upTime);
+                                                                  .Replace("%uptime%", upTime)
+                                                                  .Replace("%type%", type);
+
                                 mailMessage.SubjectEncoding = System.Text.Encoding.UTF8;
                                 mailMessage.Body = String.Empty;
                                 foreach (String bodyLine in EmailMessage)
                                 {
                                     mailMessage.Body += bodyLine.Replace("%id%", InternalServerID.ToString())
-                                                                .Replace("%gametype%", GameServerType)
+                                                                .Replace("%gameservertype%", GameServerType)
                                                                 .Replace("%shortservername%", ShortServerName)
                                                                 .Replace("%servername%", fServerInfo.ServerName)
                                                                 .Replace("%serverip%", fHost)
@@ -1070,7 +1072,9 @@ namespace PRoConEvents
                                                                 .Replace("%map%", this.FriendlyMap)
                                                                 .Replace("%gamemode%", this.FriendlyMode)
                                                                 .Replace("%round%", round)
-                                                                .Replace("%uptime%", upTime);
+                                                                .Replace("%uptime%", upTime)
+                                                                .Replace("%type%", type);
+
                                 }
                                 mailMessage.BodyEncoding = System.Text.Encoding.UTF8;
                                 mailMessage.IsBodyHtml = true;
@@ -1111,7 +1115,7 @@ namespace PRoConEvents
                                 ConsoleWrite("Preparing BlazeReport Discord notification...");
                         // parse variables 
                         title = WebhookTitle.Replace("%id%", InternalServerID.ToString())
-                                                .Replace("%gametype%", GameServerType)
+                                                .Replace("%gameservertype%", GameServerType)
                                                 .Replace("%shortservername%", ShortServerName)
                                                 .Replace("%servername%", fServerInfo.ServerName)
                                                 .Replace("%serverip%", fHost)
@@ -1121,12 +1125,13 @@ namespace PRoConEvents
                                                 .Replace("%map%", this.FriendlyMap)
                                                 .Replace("%gamemode%", this.FriendlyMode)
                                                 .Replace("%round%", round)
-                                                .Replace("%uptime%", upTime);
+                                                .Replace("%uptime%", upTime)
+                                                .Replace("%type%", type);
 
                             foreach (String contentLine in WebhookContent)
                             {
                                 content += contentLine.Replace("%id%", InternalServerID.ToString())
-                                                      .Replace("%gametype%", GameServerType)
+                                                      .Replace("%gameservertype%", GameServerType)
                                                       .Replace("%shortservername%", ShortServerName)
                                                       .Replace("%servername%", fServerInfo.ServerName)
                                                       .Replace("%serverip%", fHost)
@@ -1136,7 +1141,8 @@ namespace PRoConEvents
                                                       .Replace("%map%", this.FriendlyMap)
                                                       .Replace("%gamemode%", this.FriendlyMode)
                                                       .Replace("%round%", round)
-                                                      .Replace("%uptime%", upTime);
+                                                      .Replace("%uptime%", upTime)
+                                                      .Replace("%type%", type);
                                 content += "\n";
                             }
 
@@ -1708,7 +1714,7 @@ namespace PRoConEvents
 
 
 <h3>Section 3</h3>
-<p>These settings configure the BlazeReport-mail being sent. The following values can be entered as wildcards at the email-subject and email-body and will be replaced: %id%, %gametype%, %shortservername%, %servername%, %serverip%, %serverport%, %utc%, %players%, %map%, %gamemode%, %round%, %uptime%.</p>
+<p>These settings configure the BlazeReport-mail being sent. The following values can be entered as wildcards at the email-subject and email-body and will be replaced: %id%, %gametype%, %shortservername%, %servername%, %serverip%, %serverport%, %utc%, %players%, %map%, %gamemode%, %round%, %uptime%, %type%.</p>
 
 <p><b>Email Recipients</b>: List of email-addresses to send the notifications to, one each line.</p>
 
@@ -1730,7 +1736,7 @@ namespace PRoConEvents
 
 
 <h3>Section 4</h3>
-<p>These settings configure the BlazeReport-Discord embed notification being sent. The following values can be entered as wildcards at the Message-subject and Message-content and will be replaced: %id%, %gametype%, %shortservername%, %servername%, %serverip%, %serverport%, %utc%, %players%, %map%, %gamemode%, %round%, %uptime%.</p>
+<p>These settings configure the BlazeReport-Discord embed notification being sent. The following values can be entered as wildcards at the Message-subject and Message-content and will be replaced: %id%, %gametype%, %shortservername%, %servername%, %serverip%, %serverport%, %utc%, %players%, %map%, %gamemode%, %round%, %uptime%, %type%.</p>
 
 <p><b>Webhook Author</b>: The author of the discord notification, default FailLog.</p>
 
