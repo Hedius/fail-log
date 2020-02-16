@@ -1677,11 +1677,11 @@ namespace PRoConEvents
 
 <p><b>Restart On Blaze Delay</b>: Number, default 0. Time in seconds to wait before invoking the admin.shutDown command after a Blaze disconnect. Use with caution, since most servers get messed up or don't save progress properly after a Blaze disconnect, so instant restarts would be advised. Setting it to 0 instantly executes the command.</p>
 
-<p><b>Enable Email On Blaze/Crash</b>: True or False, default False. If True, the plugin will send a notification-email if you server blazes or crashes (see settings below). Make sure to disable the sandbox or allow SMTP-connections and your mailserver + mailserver-port in the trusted hosts.</p>
+<p><b>Enable Email On Blaze/Crash</b>: True or False, default False. If True, the plugin will send a notification-email if your server blazes or crashes (see settings below). Make sure to disable the sandbox or allow SMTP-connections and your mailserver + mailserver-port in the trusted hosts.</p>
 
-<p><b>Enable Discord Webhook On Blaze/Crash</b>: True or False, default False. If True, the plugin will send a notification to a Discord webhook if you server blazes or crashes (see settings below). Make sure to disable the sandbox.</p>
+<p><b>Enable Discord Webhook On Blaze/Crash</b>: True or False, default False. If True, the plugin will send a notification to a Discord webhook if your server blazes or crashes (see settings below). Make sure to disable the sandbox.</p>
 
-<p><b>Min Online Players For Restart Notification</b>: Number from 0 to 64, default 4. The minimum amount of online players to classify a server restart as a server crash.</p>
+<p><b>Min Online Players For Restart (Crash) Notification</b>: Number from 0 to 64, default 4. The minimum amount of online players to classify a server restart as a server crash.</p>
 
 
 
@@ -1730,7 +1730,7 @@ namespace PRoConEvents
 
 <p><b>Webhook Title</b>: Title of the discord notification. You can use the values listed above to add information about the BlazeReport.</p>
 
-<p><b>Webhook Colour Code</b>: Number, default 0xff0000 (red). Colour of the discord embed notification</p>
+<p><b>Webhook Colour Code</b>: Number, default 0xff0000 (red). Colour of the discord embed notification.</p>
 
 <p><b>Webhook Content</b>: Content of the discord notification. You can use the values listed above to add information about the BlazeReport.</p>
 
