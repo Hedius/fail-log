@@ -53,20 +53,16 @@ using PRoCon.Core.Plugin;
 namespace PRoConEvents
 {
     /* Aliases */
-
     using EventType = PRoCon.Core.Events.EventType;
     using CapturableEvent = PRoCon.Core.Events.CapturableEvents;
 
     /* Main Class */
-
     public class FailLog : PRoConPluginAPI, IPRoConPluginInterface
     {
         /* Enums */
-
         public enum MessageType { Warning, Error, Exception, Normal, Debug };
 
         /* Constants & Statics */
-
         public const int CRASH_COUNT_HEURISTIC = 24; // player count difference signifies a blaze dump
 
         public const double CHECK_FOR_UPDATES_MINS = 12 * 60; // every 12 hours
@@ -1117,8 +1113,8 @@ namespace PRoConEvents
                         {
                             if (DebugLevel >= 4)
                                 ConsoleWrite("Preparing BlazeReport Discord notification...");
-                        // parse variables 
-                        title = WebhookTitle.Replace("%id%", InternalServerID.ToString())
+                            // parse variables 
+                            title = WebhookTitle.Replace("%id%", InternalServerID.ToString())
                                                 .Replace("%gameservertype%", GameServerType)
                                                 .Replace("%shortservername%", ShortServerName)
                                                 .Replace("%servername%", fServerInfo.ServerName)
@@ -1152,8 +1148,8 @@ namespace PRoConEvents
                                 content += "\n";
                             }
 
-                        // create and send the request to discord
-                        DiscordWebhook notification = new DiscordWebhook(this, WebhookURL, WebhookAuthor, WebhookAvatarURL, WebhookColourCode, UseCustomWebhookAvatar);
+                            // create and send the request to discord
+                            DiscordWebhook notification = new DiscordWebhook(this, WebhookURL, WebhookAuthor, WebhookAvatarURL, WebhookColourCode, UseCustomWebhookAvatar);
                             notification.sendNotification(title, content);
 
                             if (DebugLevel >= 3) ConsoleWrite("BlazeReport Discord notification sent successfully!");
@@ -1224,12 +1220,12 @@ namespace PRoConEvents
                 {
                     if (String.IsNullOrEmpty(URL))
                     {
-                        plugin.ConsoleError("Discord WebHook URL empty! Unable to post report.");
+                        plugin.ConsoleError("Discord WebHook URL empty! Unable to post message.");
                         return;
                     }
                     if (String.IsNullOrEmpty(jsonBody))
                     {
-                        plugin.ConsoleError("Discord JSON body empty! Unable to post report.");
+                        plugin.ConsoleError("Discord JSON body empty! Unable to post message.");
                         return;
                     }
 
@@ -1503,12 +1499,12 @@ namespace PRoConEvents
 
         private void ValidateImageURL(ref String val, String propName, String def)
         {
-            if ((val.Contains("jpg") || !val.Contains("jpeg") || !val.Contains("png") || val.Contains("gif")) && val.Contains("http")
+            if ((val.Contains("jpg") || val.Contains("jpeg") || val.Contains("png") || val.Contains("gif")) && val.Contains("http")
                 && val.CompareTo(String.Empty) != 0)
             {
                 return;
             }
-            ConsoleError("^b" + propName + "^n is no valid image link, was set to " + val + ", corrected to " + def);
+            ConsoleError("^b" + propName + "^n is not a valid image link, was set to " + val + ", corrected to " + def);
             val = def;
             return;
         }
@@ -1517,7 +1513,7 @@ namespace PRoConEvents
         {
             if (!val.Contains("https://discordapp.com/api/webhooks/") && val.CompareTo(String.Empty) != 0)
             {
-                ConsoleError("^b" + propName + "^n is not a valid Disocrd webhook, was set to " + val + ", corrected to " + def);
+                ConsoleError("^b" + propName + "^n is not a valid Discord webhook, was set to " + val + ", corrected to " + def);
                 val = def;
                 return;
             }
@@ -1545,7 +1541,7 @@ namespace PRoConEvents
 
                 if (json == null)
                 {
-                    ConsoleError("Update check failed - gitlab.com/e4gl/fail-log is private! Please contact the maintainer Hedius!");
+                    ConsoleError("Update check failed - gitlab.com/e4gl/fail-log is private! Please contact the maintainer!");
                     return;
                 }
 
@@ -1555,7 +1551,7 @@ namespace PRoConEvents
                 }
                 else
                 {
-                    ConsoleError("Update check failed - Cannot extract latest version! Please contact the maintainer Hedius!");
+                    ConsoleError("Update check failed - Cannot extract latest version! Please contact the maintainer!");
                     return;
                 }
             }
@@ -1587,24 +1583,6 @@ namespace PRoConEvents
             }
         }
 
-        private uint VersionToNumeric(String ver)
-        {
-            uint numeric = 0;
-            byte part = 0;
-            Match m = Regex.Match(ver, @"^\s*([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)(\w*)\s*$");
-            if (m.Success)
-            {
-                for (int i = 1; i < 5; ++i)
-                {
-                    if (!Byte.TryParse(m.Groups[i].Value, out part))
-                    {
-                        part = 0;
-                    }
-                    numeric = (numeric << 8) | part;
-                }
-            }
-            return numeric;
-        }
     } // end FailLog
 
     /* ======================== UTILITIES ============================= */
