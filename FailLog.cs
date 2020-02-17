@@ -1638,7 +1638,7 @@ namespace PRoConEvents
 <p>For BF3, BF4, BFHL, this plugin logs game server crashes, layer disconnects and Blaze dumps.</p>
 
 <h2>Description</h2>
-<p>Each failure event generates a single log line. The log line is written to plugin.log. Optionally, it may also be written to a file in procon/Logs and/or to a Discord server and/or as an email, controled by plugin settings (see below). Note that this plugin must be run without restrictions (<b>not</b> in sandbox mode) in order to use either the optional separate log file or web log features. The plugin may be run in sandbox mode if both of the optional logging features are disabled.</p>
+<p>Each failure event generates a single log line. The log line is written to plugin.log. Optionally, it may also be written to a file in procon/Logs and/or to a Discord server and/or as an email, controlled by plugin settings (see below). Note that this plugin must be run without restrictions (<b>not</b> in sandbox mode) in order to use either the optional separate log file or web log features. The plugin may be run in sandbox mode if both of the optional logging features are disabled.</p>
 
 <p>The contents of a log line are divided into fields. The following table describes each of the fields and shows an example:
 <table>
