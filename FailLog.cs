@@ -237,7 +237,7 @@ namespace PRoConEvents
             EmailMessage.Add("<tr><td align=\"center\">UTC</td><td align=\"center\">%time%</td></tr>");
             EmailMessage.Add("<tr><td align=\"center\">Server</td><td align=\"center\">%shortservername%</td></tr>");
             EmailMessage.Add("<tr><td align=\"center\">Server(Long)</td><td align=\"center\">%servername%</td></tr>");
-            EmailMessage.Add("<tr><td align=\"center\">Server Type</td><td align=\"center\">%servertype%</td></tr>");
+            EmailMessage.Add("<tr><td align=\"center\">Server Type</td><td align=\"center\">%gameservertype%</td></tr>");
             EmailMessage.Add("<tr><td align=\"center\">Players</td><td align=\"center\">%playercount%</td></tr>");
             EmailMessage.Add("<tr><td align=\"center\">Map</td><td align=\"center\">%map%</td></tr>");
             EmailMessage.Add("<tr><td align=\"center\">Gamemode</td><td align=\"center\">%gamemode%</td></tr>");
