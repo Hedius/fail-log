@@ -691,7 +691,7 @@ namespace PRoConEvents
                 // Check conditions
                 if (fServerCrashed)
                 { // serverInfo uptime decreased more than 2 seconds?
-                    Failure("GAME_SERVER_RESTART", fLastPlayerCount);
+                    Failure("GAME_SERVER_CRASH", fLastPlayerCount);
                     resetWindow = true;
                 }
                 else if (fGotLogin)
@@ -1016,7 +1016,7 @@ namespace PRoConEvents
             }
 
             if (type.CompareTo("BLAZE_DISCONNECT") == 0
-                || (type.CompareTo("GAME_SERVER_RESTART") == 0 && lastPlayerCount >= MinOnlinePlayersForRestartCrashNotification))
+                || (type.CompareTo("GAME_SERVER_CRASH") == 0 && lastPlayerCount >= MinOnlinePlayersForRestartCrashNotification))
             {
 
                 if (EnableEmailOnBlazeCrash)
