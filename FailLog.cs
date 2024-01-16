@@ -71,7 +71,7 @@ namespace PRoConEvents
 
         public const int MIN_UPDATE_USAGE_COUNT = 10; // minimum number of plugin updates in use
 
-        public const String WebhookURLDefault = "https://discordapp.com/api/webhooks/ID/SECRET";
+        public const String WebhookURLDefault = "https://discord.com/api/webhooks/ID/SECRET";
 
         public const String WebhookAvatarURLDefault = "https://upload.wikimedia.org/wikipedia/commons/f/fc/Trinity_Detonation_T%26B.jpg";
 
@@ -303,7 +303,7 @@ namespace PRoConEvents
 
         public String GetPluginVersion()
         {
-            return "2.0.1";
+            return "2.0.2";
         }
 
         public String GetPluginAuthor()
@@ -1192,7 +1192,7 @@ namespace PRoConEvents
                 }
 
                 // POST Body
-                // Doc: https://discordapp.com/developers/docs/resources/channel#embed-object
+                // Doc: https://discord.com/developers/docs/resources/channel#embed-object
                 Hashtable embed = new Hashtable{
                     {"title", title},
                     {"description", content},
@@ -1511,7 +1511,7 @@ namespace PRoConEvents
 
         private void ValidateDiscordWebhookURL(ref String val, String propName, String def)
         {
-            if (!val.Contains("https://discordapp.com/api/webhooks/") && val.CompareTo(String.Empty) != 0)
+            if (!val.Contains("https://discordapp.com/api/webhooks/") && !val.Contains("https://discord.com/api/webhooks/")  && val.CompareTo(String.Empty) != 0)
             {
                 ConsoleError("^b" + propName + "^n is not a valid Discord webhook, was set to " + val + ", corrected to " + def);
                 val = def;
@@ -1541,7 +1541,7 @@ namespace PRoConEvents
 
                 if (json == null)
                 {
-                    ConsoleError("Update check failed - gitlab.com/e4gl/fail-log is private! Please contact the maintainer!");
+                    ConsoleError("Update check failed - github.com/hedius/fail-log is private! Please contact the maintainer!");
                     return;
                 }
 
