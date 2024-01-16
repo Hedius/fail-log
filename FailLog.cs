@@ -1536,7 +1536,7 @@ namespace PRoConEvents
             {
                 WebClient client = new WebClient();
                 String response;
-                response = client.DownloadString("https://gitlab.com/e4gl/fail-log/-/raw/master/version.json");
+                response = client.DownloadString("https://raw.githubusercontent.com/Hedius/fail-log/master/version.json");
                 Hashtable json = (Hashtable)JSON.JsonDecode(response);
 
                 if (json == null)
