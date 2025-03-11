@@ -1694,6 +1694,7 @@ namespace PRoConEvents
 <tr><td>Players</td><td>vars.maxPlayers/previous known player count/current player count</td><td>64/63/0</td></tr>
 <tr><td>Uptime</td><td>Uptime of game server as days.hh:mm:ss</td><td>6.09:01:35</td></tr>
 <tr><td>Details</td><td>All of the information you entered in Section 2 of the settings</td><td>&quot;Game Server Type, Internal Server ID, Short Server Name&quot;</td></tr>
+<tr><td>Latest Joins</td><td>Shows recent player join events.</td><td>Player 1 (3m), Player 2 (8m),...</td></tr>
 </table></p>
 
 <h3>Blaze Disconnect Failures</h3>
@@ -1725,6 +1726,7 @@ namespace PRoConEvents
 
 <p><b>Min Online Players For Restart (Crash) Notification</b>: Number from 0 to 64, default 4. The minimum amount of online players to classify a server restart as a server crash.</p>
 
+<p><b>Ignored Players</b>List of players that should be ignored in the latest joins logic. Joins matching this setting are not logged.</p>
 
 
 <h3>Section 2</h3>
