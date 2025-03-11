@@ -106,7 +106,7 @@ namespace PRoConEvents
         private bool fRestartInitiated;
         private Hashtable fConfigSettings;
         private Dictionary<String, DateTime> fConfigTimestamp;
-        private List<String> fLatestJoins = new List<String>();
+        private List<(String name, DateTime timestamp)> fLatestJoins = new List<(String name, DateTime timestamp)>();
 
         // Settings support
         private Dictionary<int, Type> fEasyTypeDict = null;
@@ -681,7 +681,7 @@ namespace PRoConEvents
             {
                 fLatestJoins.RemoveAt(0);
             }
-            fLatestJoins.Add(name);
+            fLatestJoins.Add((name, DateTime.UtcNow));
         }
 
         public override void OnListPlayers(List<CPlayerInfo> players, CPlayerSubset subset)
@@ -1066,7 +1066,7 @@ namespace PRoConEvents
                                                                   .Replace("%round%", round)
                                                                   .Replace("%uptime%", upTime)
                                                                   .Replace("%type%", type)
-                                                                  .Replace("%latestJoins%", string.Join(", ", fLatestJoins));
+                                                                  .Replace("%latestJoins%", GetLatestJoins());
 
                                 mailMessage.SubjectEncoding = System.Text.Encoding.UTF8;
                                 mailMessage.Body = String.Empty;
@@ -1086,8 +1086,7 @@ namespace PRoConEvents
                                                                 .Replace("%round%", round)
                                                                 .Replace("%uptime%", upTime)
                                                                 .Replace("%type%", type)
-                                                                .Replace("%latestJoins%", string.Join(", ", fLatestJoins));
-
+                                                                .Replace("%latestJoins%", GetLatestJoins());
                                 }
                                 mailMessage.BodyEncoding = System.Text.Encoding.UTF8;
                                 mailMessage.IsBodyHtml = true;
@@ -1141,7 +1140,7 @@ namespace PRoConEvents
                                                 .Replace("%round%", round)
                                                 .Replace("%uptime%", upTime)
                                                 .Replace("%type%", type)
-                                                .Replace("%latestJoins%", string.Join(", ", fLatestJoins));
+                                                .Replace("%latestJoins%", GetLatestJoins());
 
                             foreach (String contentLine in WebhookContent)
                             {
@@ -1159,7 +1158,7 @@ namespace PRoConEvents
                                                       .Replace("%round%", round)
                                                       .Replace("%uptime%", upTime)
                                                       .Replace("%type%", type)
-                                                      .Replace("%latestJoins%", string.Join(", ", fLatestJoins));
+                                                      .Replace("%latestJoins%", GetLatestJoins());
                                 content += "\n";
                             }
 
@@ -1283,6 +1282,23 @@ namespace PRoConEvents
                 prefix += "^9^bDEBUG^n: ";
 
             return prefix + msg;
+        }
+
+        private string GetLatestJoins()
+        {
+            var now = DateTime.UtcNow;
+            var result = new List<string>();
+
+            foreach (var join in fLatestJoins)
+            {
+                double ageInMinutes = (now - join.timestamp).TotalMinutes;
+                if (ageInMinutes <= 10)
+                {
+                    result.Add(join.name + " (" + (int)ageInMinutes + " m)");
+                }
+            }
+
+            return string.Join(", ", result);
         }
 
         public void LogWrite(String msg)
