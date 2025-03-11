@@ -106,6 +106,7 @@ namespace PRoConEvents
         private bool fRestartInitiated;
         private Hashtable fConfigSettings;
         private Dictionary<String, DateTime> fConfigTimestamp;
+        private List<String> fLatestJoins = new List<String>();
 
         // Settings support
         private Dictionary<int, Type> fEasyTypeDict = null;
@@ -608,7 +609,8 @@ namespace PRoConEvents
                 "OnTeamKillCountForKick",
                 "OnTeamKillValueIncrease",
                 "OnTeamKillValueDecreasePerSecond",
-                "OnTeamKillValueForKick"
+                "OnTeamKillValueForKick",
+                "OnPlayerJoin"
             );
         }
 
@@ -671,6 +673,15 @@ namespace PRoConEvents
             {
                 ConsoleException(e);
             }
+        }
+
+        public override void OnPlayerJoin(string name)
+        {
+            if (fLatestJoins.Count >= 10)
+            {
+                fLatestJoins.RemoveAt(0);
+            }
+            fLatestJoins.Add(name);
         }
 
         public override void OnListPlayers(List<CPlayerInfo> players, CPlayerSubset subset)
@@ -1054,7 +1065,8 @@ namespace PRoConEvents
                                                                   .Replace("%gamemode%", this.FriendlyMode)
                                                                   .Replace("%round%", round)
                                                                   .Replace("%uptime%", upTime)
-                                                                  .Replace("%type%", type);
+                                                                  .Replace("%type%", type)
+                                                                  .Replace("%latestJoins%", string.Join(", ", fLatestJoins));
 
                                 mailMessage.SubjectEncoding = System.Text.Encoding.UTF8;
                                 mailMessage.Body = String.Empty;
@@ -1073,7 +1085,8 @@ namespace PRoConEvents
                                                                 .Replace("%gamemode%", this.FriendlyMode)
                                                                 .Replace("%round%", round)
                                                                 .Replace("%uptime%", upTime)
-                                                                .Replace("%type%", type);
+                                                                .Replace("%type%", type)
+                                                                .Replace("%latestJoins%", string.Join(", ", fLatestJoins));
 
                                 }
                                 mailMessage.BodyEncoding = System.Text.Encoding.UTF8;
@@ -1127,7 +1140,8 @@ namespace PRoConEvents
                                                 .Replace("%gamemode%", this.FriendlyMode)
                                                 .Replace("%round%", round)
                                                 .Replace("%uptime%", upTime)
-                                                .Replace("%type%", type);
+                                                .Replace("%type%", type)
+                                                .Replace("%latestJoins%", string.Join(", ", fLatestJoins));
 
                             foreach (String contentLine in WebhookContent)
                             {
@@ -1144,7 +1158,8 @@ namespace PRoConEvents
                                                       .Replace("%gamemode%", this.FriendlyMode)
                                                       .Replace("%round%", round)
                                                       .Replace("%uptime%", upTime)
-                                                      .Replace("%type%", type);
+                                                      .Replace("%type%", type)
+                                                      .Replace("%latestJoins%", string.Join(", ", fLatestJoins));
                                 content += "\n";
                             }
 
