@@ -128,6 +128,7 @@ namespace PRoConEvents
         public bool EnableEmailOnBlazeCrash;
         public bool EnableDiscordWebhookOnBlazeCrash;
         public int MinOnlinePlayersForRestartCrashNotification;
+        public List<string> IgnoredPlayers;
 
         /* ===== SECTION 2 - Server Description ===== */
 
@@ -215,6 +216,7 @@ namespace PRoConEvents
             EnableEmailOnBlazeCrash = false;
             EnableDiscordWebhookOnBlazeCrash = false;
             MinOnlinePlayersForRestartCrashNotification = 4;
+            IgnoredPlayers = new List<string>();
 
             /* ===== SECTION 2 - Server Description ===== */
 
@@ -227,24 +229,26 @@ namespace PRoConEvents
             EmailRecipients = new List<String>();
             EmailSender = String.Empty;
             EmailSubject = "FailLog - Server %id% - %shortservername% blazed/crashed (%time%)!";
-
-            EmailMessage = new List<String>();
-            EmailMessage.Add("<h2 align=\"center\">FailLog - BlazeReport</h2>");
-            EmailMessage.Add("<p>Your server %id% '%servername%' just blazed/crashed!<br />");
-            EmailMessage.Add("Here's some information about the Blaze/Crash:</p>");
-            EmailMessage.Add("<table border=\"1\">");
-            EmailMessage.Add("<tr><th>Field</th><th>Value</th></tr>");
-            EmailMessage.Add("<tr><td align=\"center\">Type</td><td align=\"center\">%type%</td></tr>");
-            EmailMessage.Add("<tr><td align=\"center\">UTC</td><td align=\"center\">%time%</td></tr>");
-            EmailMessage.Add("<tr><td align=\"center\">Server</td><td align=\"center\">%shortservername%</td></tr>");
-            EmailMessage.Add("<tr><td align=\"center\">Server(Long)</td><td align=\"center\">%servername%</td></tr>");
-            EmailMessage.Add("<tr><td align=\"center\">Server Type</td><td align=\"center\">%gameservertype%</td></tr>");
-            EmailMessage.Add("<tr><td align=\"center\">Players</td><td align=\"center\">%playercount%</td></tr>");
-            EmailMessage.Add("<tr><td align=\"center\">Map</td><td align=\"center\">%map%</td></tr>");
-            EmailMessage.Add("<tr><td align=\"center\">Gamemode</td><td align=\"center\">%gamemode%</td></tr>");
-            EmailMessage.Add("<tr><td align=\"center\">Round</td><td align=\"center\">%round%</td></tr>");
-            EmailMessage.Add("<tr><td align=\"center\">Uptime</td><td align=\"center\">%uptime%</td></tr>");
-            EmailMessage.Add("</table>");
+            EmailMessage = new List<string>
+            {
+                "<h2 align=\"center\">FailLog - BlazeReport</h2>",
+                "<p>Your server %id% '%servername%' just blazed/crashed!<br />",
+                "Here's some information about the Blaze/Crash:</p>",
+                "<table border=\"1\">",
+                "<tr><th>Field</th><th>Value</th></tr>",
+                "<tr><td align=\"center\">Type</td><td align=\"center\">%type%</td></tr>",
+                "<tr><td align=\"center\">UTC</td><td align=\"center\">%time%</td></tr>",
+                "<tr><td align=\"center\">Server</td><td align=\"center\">%shortservername%</td></tr>",
+                "<tr><td align=\"center\">Server(Long)</td><td align=\"center\">%servername%</td></tr>",
+                "<tr><td align=\"center\">Server Type</td><td align=\"center\">%gameservertype%</td></tr>",
+                "<tr><td align=\"center\">Players</td><td align=\"center\">%playercount%</td></tr>",
+                "<tr><td align=\"center\">Map</td><td align=\"center\">%map%</td></tr>",
+                "<tr><td align=\"center\">Gamemode</td><td align=\"center\">%gamemode%</td></tr>",
+                "<tr><td align=\"center\">Round</td><td align=\"center\">%round%</td></tr>",
+                "<tr><td align=\"center\">Uptime</td><td align=\"center\">%uptime%</td></tr>",
+                "<tr><td align=\"center\">Latest Joins</td><td align=\"center\">%latestJoins%</td></tr>",
+                "</table>"
+            };
 
             SMTPHostname = String.Empty;
             SMTPPort = 25;
@@ -260,18 +264,21 @@ namespace PRoConEvents
             WebhookTitle = "Server %id% - %shortservername% blazed/crashed!";
             WebhookColourCode = 0xff0000;
 
-            WebhookContent = new List<String>();
-            WebhookContent.Add("**FailLog** - **BlazeReport**:");
-            WebhookContent.Add("> **Type**: %type%");
-            WebhookContent.Add("> **UTC**: %time%");
-            WebhookContent.Add("> **ID**: %id%");
-            WebhookContent.Add("> **Server**: %shortservername%");
-            WebhookContent.Add("> **Server(Long)**: %servername%");
-            WebhookContent.Add("> **Players**: %playercount%");
-            WebhookContent.Add("> **Map**: %map%");
-            WebhookContent.Add("> **Gamemode**: %gamemode%");
-            WebhookContent.Add("> **Round**: %round%");
-            WebhookContent.Add("> **Uptime**: %uptime%");
+            WebhookContent = new List<string>
+            {
+                "**FailLog** - **BlazeReport**:",
+                "> **Type**: %type%",
+                "> **UTC**: %time%",
+                "> **ID**: %id%",
+                "> **Server**: %shortservername%",
+                "> **Server(Long)**: %servername%",
+                "> **Players**: %playercount%",
+                "> **Map**: %map%",
+                "> **Gamemode**: %gamemode%",
+                "> **Round**: %round%",
+                "> **Uptime**: %uptime%",
+                "> **Latest Joins**: %latestJoins%"
+            };
 
             WebhookURL = WebhookURLDefault;
         }
@@ -304,7 +311,7 @@ namespace PRoConEvents
 
         public String GetPluginVersion()
         {
-            return "2.0.2";
+            return "2.1.0";
         }
 
         public String GetPluginAuthor()
@@ -314,7 +321,7 @@ namespace PRoConEvents
 
         public String GetPluginWebsite()
         {
-            return "gitlab.com/e4gl/fail-log";
+            return "github.com/hedius/fail-log";
         }
 
         public String GetPluginDescription()
@@ -362,6 +369,8 @@ namespace PRoConEvents
                     lstReturn.Add(new CPluginVariable("1 - Settings|Min Online Players For Restart/Crash Notification",
                                   MinOnlinePlayersForRestartCrashNotification.GetType(), MinOnlinePlayersForRestartCrashNotification));
                 }
+
+                lstReturn.Add(new CPluginVariable("1 - Settings|Ignored Players", typeof(String[]), IgnoredPlayers.ToArray()));
 
                 /* ===== SECTION 2 - Server Description ===== */
 
@@ -677,11 +686,13 @@ namespace PRoConEvents
 
         public override void OnPlayerJoin(string name)
         {
-            if (fLatestJoins.Count >= 10)
-            {
-                fLatestJoins.RemoveAt(0);
+            if (!IgnoredPlayers.Contains(name)) {
+                if (fLatestJoins.Count >= 10) {
+                    fLatestJoins.RemoveAt(0);
+                }
+
+                fLatestJoins.Add((name, DateTime.UtcNow));
             }
-            fLatestJoins.Add((name, DateTime.UtcNow));
         }
 
         public override void OnListPlayers(List<CPlayerInfo> players, CPlayerSubset subset)
