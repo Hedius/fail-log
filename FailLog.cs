@@ -686,12 +686,16 @@ namespace PRoConEvents
 
         public override void OnPlayerJoin(string name)
         {
-            if (!IgnoredPlayers.Contains(name)) {
-                if (fLatestJoins.Count >= 10) {
-                    fLatestJoins.RemoveAt(0);
-                }
+            if (!IgnoredPlayers.Contains(name))
+            {
+                // insert at front
+                fLatestJoins.Insert(0, (name, DateTime.UtcNow));
 
-                fLatestJoins.Add((name, DateTime.UtcNow));
+                // remove from end
+                if (fLatestJoins.Count > 10)
+                {
+                    fLatestJoins.RemoveAt(fLatestJoins.Count - 1);
+                }
             }
         }
 
