@@ -674,6 +674,8 @@ namespace PRoConEvents
             DebugWrite("^9Got ^bOnLogin^n", 8);
             try
             {
+                // tmp to debug this. :)
+                return;
                 if (fJustConnected) return;
                 fGotLogin = true;
                 fLastListPlayersTimestamp = DateTime.MinValue;
