@@ -1311,7 +1311,7 @@ namespace PRoConEvents
                 double ageInMinutes = (now - join.timestamp).TotalMinutes;
                 if (ageInMinutes <= 10)
                 {
-                    result.Add(join.name + " (" + (int)ageInMinutes + " m)");
+                    result.Add(join.name + " (" + (int)ageInMinutes + "m)");
                 }
             }
 
